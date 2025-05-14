@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
-import { UserRole } from '../models';
+import { UserRole } from '@/models';
 
 declare global {
   namespace Express {

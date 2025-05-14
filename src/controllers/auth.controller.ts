@@ -1,6 +1,6 @@
+import { UserRole } from '@/models';
+import { AuthService, INVALID_CREDENTIALS, USER_NOT_FOUND, USER_WITH_EMAIL_ALREADY_EXISTS } from '@/services/auth.service';
 import { Request, Response } from 'express';
-import authService, { USER_WITH_EMAIL_ALREADY_EXISTS, INVALID_CREDENTIALS, USER_NOT_FOUND } from '../services/auth.service';
-import { UserRole } from '../models';
 
 interface RegisterRequest {
   email: string;
@@ -16,6 +16,7 @@ interface LoginRequest {
 }
 
 export class AuthController {
+  constructor(private authService: AuthService) {}
   private INVALID_REGISTER_REQUEST_BODY = 'Invalid register request body, make sure all fields are provided. Email, password, firstName, lastName, role are required';
   private INVALID_LOGIN_REQUEST_BODY = 'Invalid login request body, make sure email and password are provided';
   private INVALID_USER_ROLE = 'Invalid user role, make sure role is provided and is one of the following: L1_AGENT, L2_SUPPORT, L3_SUPPORT, ADMIN';
@@ -36,7 +37,7 @@ export class AuthController {
         res.status(400).json({ message: this.INVALID_USER_ROLE });
         return;
       }
-      const result = await authService.register({
+      const result = await this.authService.register({
         email,
         password,
         firstName,
@@ -65,7 +66,7 @@ export class AuthController {
         res.status(400).json({ message: this.INVALID_EMAIL_FORMAT });
         return;
       }
-      const result = await authService.login(email, password);
+      const result = await this.authService.login(email, password);
       res.status(200).json(result);
     } catch (error: any) {
       if (error.message === INVALID_CREDENTIALS || error.message === USER_NOT_FOUND) {
@@ -107,4 +108,4 @@ export class AuthController {
   };
 }
 
-export default new AuthController();
+export default new AuthController(new AuthService());

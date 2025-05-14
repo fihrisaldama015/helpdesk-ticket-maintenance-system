@@ -142,26 +142,6 @@ export class TicketService {
     const updatedTicket = await this.prisma.ticket.update({
       where: { id: ticketId },
       data: updateData,
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        }
-      }
     });
     await this.prisma.ticketAction.create({
       data: {
@@ -196,26 +176,6 @@ export class TicketService {
     const updatedTicket = await this.prisma.ticket.update({
       where: { id: ticketId },
       data: updateData,
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        }
-      }
     });
     await this.prisma.ticketAction.create({
       data: {
@@ -274,26 +234,6 @@ export class TicketService {
       where: { id: ticketId },
       data: {
         status: TicketStatus.RESOLVED
-      },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        }
       }
     });
     await this.prisma.ticketAction.create({
@@ -382,5 +322,3 @@ export class TicketService {
     });
   }
 }
-
-export default new TicketService();

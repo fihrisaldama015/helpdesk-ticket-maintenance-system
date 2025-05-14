@@ -1,7 +1,7 @@
+import { authenticate, authorize } from '@/middlewares/auth.middleware';
+import { UserRole } from '@/models';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { authenticate, authorize } from '../../src/middlewares/auth.middleware';
-import { UserRole } from '../../src/models';
 
 jest.mock('jsonwebtoken');
 jest.mock('@prisma/client', () => ({

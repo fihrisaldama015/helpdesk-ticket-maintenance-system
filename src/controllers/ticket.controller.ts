@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
-import ticketService from '@/services/ticket.service';
+import { TicketService } from '@/services/ticket.service';
 import { TicketStatus, UserRole, CriticalValue } from '@/models';
 
 export class TicketController {
+  constructor(private ticketService: TicketService) {}
+
   async createTicket(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
@@ -14,7 +16,7 @@ export class TicketController {
         res.status(400).json({ message: 'Missing required fields' });
         return;
       }
-      const ticket = await ticketService.createTicket(
+      const ticket = await this.ticketService.createTicket(
         {
           title,
           description,
@@ -26,7 +28,6 @@ export class TicketController {
       );
       res.status(201).json(ticket);
     } catch (error) {
-      console.error('Create ticket error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -38,10 +39,10 @@ export class TicketController {
         return;
       }
       const { status, priority, escalation } = req.query;
-      const tickets = await ticketService.getTickets({
-        status: status as TicketStatus | undefined,
-        priority: priority as string | undefined,
-        escalation: escalation as string | undefined
+      const tickets = await this.ticketService.getTickets({
+        status: status as TicketStatus || undefined,
+        priority: priority as string || undefined,
+        escalation: escalation as string || undefined
       });
       res.status(200).json(tickets);
     } catch (error) {
@@ -57,7 +58,7 @@ export class TicketController {
         return;
       }
       const { id } = req.params;
-      const ticket = await ticketService.getTicketById(id);
+      const ticket = await this.ticketService.getTicketById(id);
       res.status(200).json(ticket);
     } catch (error: any) {
       if (error.message === 'Ticket not found') {
@@ -77,14 +78,14 @@ export class TicketController {
       }
       const { id } = req.params;
       const { status } = req.body;
-      if (req.user.role === UserRole.L1_AGENT && 
-          status !== TicketStatus.NEW && 
-          status !== TicketStatus.ATTENDING && 
-          status !== TicketStatus.COMPLETED) {
+      if (req.user.role === UserRole.L1_AGENT &&
+        status !== TicketStatus.NEW &&
+        status !== TicketStatus.ATTENDING &&
+        status !== TicketStatus.COMPLETED) {
         res.status(403).json({ message: 'L1 agents can only set status to NEW, ATTENDING, or COMPLETED' });
         return;
       }
-      const ticket = await ticketService.updateTicket(
+      const ticket = await this.ticketService.updateTicket(
         id,
         { status },
         req.user.id
@@ -112,7 +113,7 @@ export class TicketController {
         res.status(400).json({ message: 'Escalation notes are required' });
         return;
       }
-      const ticket = await ticketService.escalateTicket(
+      const ticket = await this.ticketService.escalateTicket(
         id,
         req.user.id,
         notes,
@@ -149,12 +150,12 @@ export class TicketController {
         res.status(400).json({ message: 'Only tickets with critical value C1 or C2 can be escalated to L3' });
         return;
       }
-      await ticketService.updateTicket(
+      await this.ticketService.updateTicket(
         id,
         { criticalValue },
         req.user.id
-      );  
-      const ticket = await ticketService.escalateTicket(
+      );
+      const ticket = await this.ticketService.escalateTicket(
         id,
         req.user.id,
         notes,
@@ -179,7 +180,11 @@ export class TicketController {
         return;
       }
       const { id } = req.params;
-      const { criticalValue } = req.body;      
+      const { criticalValue } = req.body;
+      if (req.user.role !== UserRole.L2_SUPPORT && req.user.role !== UserRole.L3_SUPPORT) {
+        res.status(403).json({ message: 'not authorized' });
+        return;
+      }
       if (!criticalValue) {
         res.status(400).json({ message: 'Critical value is required' });
         return;
@@ -188,7 +193,7 @@ export class TicketController {
         res.status(400).json({ message: 'Invalid critical value' });
         return;
       }
-      const ticket = await ticketService.updateTicket(
+      const ticket = await this.ticketService.updateTicket(
         id,
         { criticalValue },
         req.user.id
@@ -216,7 +221,7 @@ export class TicketController {
         res.status(400).json({ message: 'Action description is required' });
         return;
       }
-      const ticketAction = await ticketService.addTicketAction(
+      const ticketAction = await this.ticketService.addTicketAction(
         {
           ticketId: id,
           action,
@@ -242,13 +247,17 @@ export class TicketController {
         res.status(401).json({ message: 'Not authenticated' });
         return;
       }
+      if(req.user.role !== UserRole.L3_SUPPORT){
+        res.status(403).json({ message: 'not authorized' });
+        return;
+      }
       const { id } = req.params;
       const { resolutionNotes } = req.body;
       if (!resolutionNotes) {
         res.status(400).json({ message: 'Resolution notes are required' });
         return;
       }
-      const ticket = await ticketService.resolveTicket(
+      const ticket = await this.ticketService.resolveTicket(
         id,
         req.user.id,
         resolutionNotes
@@ -270,7 +279,7 @@ export class TicketController {
         res.status(401).json({ message: 'Not authenticated' });
         return;
       }
-      const tickets = await ticketService.getTicketsByAssignee(req.user.id);
+      const tickets = await this.ticketService.getTicketsByAssignee(req.user.id);
       res.status(200).json(tickets);
     } catch (error) {
       console.error('Get my tickets error:', error);
@@ -293,7 +302,7 @@ export class TicketController {
         res.status(403).json({ message: 'Access denied' });
         return;
       }
-      const tickets = await ticketService.getEscalatedTickets(level);
+      const tickets = await this.ticketService.getEscalatedTickets(level);
       res.status(200).json(tickets);
     } catch (error) {
       console.error('Get escalated tickets error:', error);
@@ -302,4 +311,4 @@ export class TicketController {
   }
 }
 
-export default new TicketController();
+export default new TicketController(new TicketService());
