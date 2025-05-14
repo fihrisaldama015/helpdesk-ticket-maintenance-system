@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash    String
+  firstName      String
+  lastName       String
+  role           UserRole
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  ticketsCreated Ticket[]        @relation("CreatedBy")
+  ticketsAssigned Ticket[]       @relation("AssignedTo")
+  ticketActions  TicketAction[]
+}
+
+model Ticket {
+  id                 String          @id @default(uuid())
+  title              String
+  description        String
+  category           TicketCategory
+  priority           TicketPriority
+  status             TicketStatus    @default(NEW)
+  criticalValue      CriticalValue   @default(NONE)
+  expectedCompletionDate DateTime?
+  createdById        String
+  createdBy          User            @relation("CreatedBy", fields: [createdById], references: [id])
+  assignedToId       String?
+  assignedTo         User?           @relation("AssignedTo", fields: [assignedToId], references: [id])
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  actions            TicketAction[]
+}
+
+model TicketAction {
+  id          String    @id @default(uuid())
+  ticketId    String
+  ticket      Ticket    @relation(fields: [ticketId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  action      String    // Action description (e.g., "Updated status", "Added comment", "Escalated")
+  notes       String?   // Optional notes
+  newStatus   TicketStatus?
+  createdAt   DateTime  @default(now())
+}
+
+enum UserRole {
+  L1_AGENT       // Helpdesk Agent
+  L2_SUPPORT     // Technical Support
+  L3_SUPPORT     // Advanced Support
+}
+
+enum TicketStatus {
+  NEW           // New ticket created
+  ATTENDING     // Ticket is being attended to
+  COMPLETED     // Ticket is completed
+  ESCALATED_L2  // Ticket is escalated to L2 support
+  ESCALATED_L3  // Ticket is escalated to L3 support
+  RESOLVED      // Ticket is resolved
+}
+
+enum TicketPriority {
+  LOW           // Low priority
+  MEDIUM        // Medium priority
+  HIGH          // High priority
+}
+
+enum TicketCategory {
+  HARDWARE      // Hardware issue
+  SOFTWARE      // Software issue
+  NETWORK       // Network issue
+  ACCESS        // Access issue
+  OTHER         // Other issue
+}
+
+enum CriticalValue {
+  C1            // High - System down
+  C2            // Medium - Partial feature issue
+  C3            // Low - Minor problem or inquiry
+  NONE          // Not assigned yet
+}
