@@ -76,8 +76,13 @@ A full-stack web application for managing helpdesk tickets with multi-level supp
 
 1. Clone the repository
 ```bash
-git clone <repository-url>
-cd ticket_maintenance
+# Using SSH
+git clone git@github.com:fihrisaldama015/helpdesk-ticket-maintenance-system.git
+
+# Using HTTPS
+git clone https://github.com/fihrisaldama015/helpdesk-ticket-maintenance-system.git
+
+cd helpdesk-ticket-maintenance-system
 ```
 
 2. Install dependencies
