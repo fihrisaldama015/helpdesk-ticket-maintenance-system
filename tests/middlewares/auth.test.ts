@@ -4,15 +4,19 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 jest.mock('jsonwebtoken');
-jest.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn().mockImplementation(() => ({
-    user: {
-      findUnique: jest.fn(),
-    },
-  })),
-}));
 
-const mockPrisma = new (jest.requireMock('@prisma/client').PrismaClient)();
+jest.mock('@/config/prisma', () => {
+  return {
+    __esModule: true,
+    default: {
+      user: {
+        findUnique: jest.fn()
+      }
+    }
+  };
+});
+
+import prisma from '@/config/prisma';
 
 const mockRes = (): Response => {
   const res = {} as Response;
@@ -22,6 +26,10 @@ const mockRes = (): Response => {
 };
 
 describe('authenticate middleware', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('returns 401 if no Authorization header', async () => {
     const req = { headers: {} } as Request;
     const res = mockRes();
@@ -61,8 +69,10 @@ describe('authenticate middleware', () => {
       email: 'test@example.com',
       role: UserRole.L1_AGENT,
     };
+    
     (jwt.verify as jest.Mock).mockReturnValue(mockUserPayload);
-    mockPrisma.user.findUnique.mockResolvedValue(null);
+    
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
     const req = {
       headers: { authorization: 'Bearer valid' },
@@ -76,6 +86,9 @@ describe('authenticate middleware', () => {
     expect(res.json).toHaveBeenCalledWith({
       message: '[MIDDLEWARE] User not found',
     });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: mockUserPayload.id }
+    });
   });
 
   it('attaches user and calls next() if valid', async () => {
@@ -84,14 +97,15 @@ describe('authenticate middleware', () => {
       email: 'test@example.com',
       role: UserRole.L1_AGENT,
     };
+    
     (jwt.verify as jest.Mock).mockReturnValue(mockUser);
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+    
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
     const req = {
       headers: { authorization: 'Bearer valid' },
-      user: undefined,
     } as Request & { user?: any };
-
+    
     const res = mockRes();
     const next = jest.fn();
 
@@ -99,6 +113,9 @@ describe('authenticate middleware', () => {
 
     expect(req.user).toEqual(mockUser);
     expect(next).toHaveBeenCalled();
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: mockUser.id }
+    });
   });
 });
 

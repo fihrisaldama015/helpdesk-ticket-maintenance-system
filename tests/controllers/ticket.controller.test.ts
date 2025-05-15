@@ -4,7 +4,6 @@ import { TicketService } from '@/services/ticket.service';
 import { Request, Response } from 'express';
 import * as httpMocks from 'node-mocks-http';
 
-// Mock the TicketService
 jest.mock('@/services/ticket.service');
 
 describe('TicketController', () => {
@@ -14,14 +13,12 @@ describe('TicketController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Create a mocked instance of TicketService
     ticketService = new (TicketService as jest.Mock<TicketService>)() as jest.Mocked<TicketService>;
     ticketController = new TicketController(ticketService);
   });
 
   describe('createTicket', () => {
     it('should create a new ticket successfully (L1_AGENT)', async () => {
-      // Mock data
       const ticketData = {
         title: 'Test Ticket',
         description: 'This is a test ticket',
@@ -30,7 +27,6 @@ describe('TicketController', () => {
         expectedCompletionDate: new Date('2025-06-01T12:00:00Z')
       };
 
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/api/tickets',
@@ -44,7 +40,6 @@ describe('TicketController', () => {
 
       const res = httpMocks.createResponse();
 
-      // Mock the service response
       const createdTicket = {
         id: 'ticket123',
         ...ticketData,
@@ -85,7 +80,6 @@ describe('TicketController', () => {
     });
 
     it('should handle errors during ticket creation', async () => {
-      // Mock data
       const ticketData = {
         title: 'Test Ticket',
         description: 'This is a test ticket',
@@ -94,7 +88,6 @@ describe('TicketController', () => {
         expectedCompletionDate: new Date('2025-06-01T12:00:00Z').toISOString()
       };
 
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/api/tickets',
@@ -122,12 +115,9 @@ describe('TicketController', () => {
 
   describe('updateTicketStatus', () => {
     it('should update ticket status successfully (L1_AGENT)', async () => {
-      // Mock data
       const updateData = {
         status: TicketStatus.ATTENDING
       };
-
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'PATCH',
         url: '/api/tickets/ticket123/status',
@@ -141,7 +131,6 @@ describe('TicketController', () => {
 
       const res = httpMocks.createResponse();
 
-      // Mock the service response
       const updatedTicket = {
         id: 'ticket123',
         title: 'Test Ticket',
@@ -159,10 +148,8 @@ describe('TicketController', () => {
 
       ticketService.updateTicket = jest.fn().mockResolvedValueOnce(updatedTicket);
 
-      // Call the controller method
       await ticketController.updateTicketStatus(req as unknown as Request, res as unknown as Response);
 
-      // Assertions
       expect(ticketService.updateTicket).toHaveBeenCalledWith(
         'ticket123',
         { status: TicketStatus.ATTENDING },
@@ -227,12 +214,10 @@ describe('TicketController', () => {
 
   describe('updateCriticalValue', () => {
     it('should update critical value successfully (L2_SUPPORT)', async () => {
-      // Mock data
       const updateData = {
         criticalValue: 'C2'
       };
 
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'PATCH',
         url: '/api/tickets/ticket123/critical',
@@ -246,7 +231,6 @@ describe('TicketController', () => {
 
       const res = httpMocks.createResponse();
 
-      // Mock the service response
       const updatedTicket = {
         id: 'ticket123',
         title: 'Test Ticket',
@@ -264,10 +248,8 @@ describe('TicketController', () => {
 
       ticketService.updateTicket = jest.fn().mockResolvedValueOnce(updatedTicket);
 
-      // Call the controller method
       await ticketController.setCriticalValue(req as unknown as Request, res as unknown as Response);
 
-      // Assertions
       expect(ticketService.updateTicket).toHaveBeenCalledWith(
         'ticket123',
         { criticalValue: 'C2' },
@@ -282,12 +264,9 @@ describe('TicketController', () => {
     });
 
     it('should reject critical value update from L1_AGENT', async () => {
-      // Mock data
       const updateData = {
         criticalValue: 'C1'
       };
-
-      // Mock request and response with L1_AGENT role
       const req = httpMocks.createRequest({
         method: 'PATCH',
         url: '/api/tickets/ticket123/critical',
@@ -295,29 +274,25 @@ describe('TicketController', () => {
         body: updateData,
         user: {
           id: 'user123',
-          role: UserRole.L1_AGENT  // L1 agent should not be able to update critical value
+          role: UserRole.L1_AGENT
         }
       });
 
       const res = httpMocks.createResponse();
 
-      // Call the controller method
       await ticketController.setCriticalValue(req as unknown as Request, res as unknown as Response);
 
-      // Assertions - should get forbidden status
       expect(res._getStatusCode()).toBe(403);
       expect(JSON.parse(res._getData())).toEqual(expect.objectContaining({
         message: expect.stringContaining('not authorized')
       }));
 
-      // Service method should not be called
       expect(ticketService.updateTicket).not.toHaveBeenCalled();
     });
   });
 
   describe('getTickets', () => {
     it('should get tickets with filters', async () => {
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'GET',
         url: '/api/tickets?status=ESCALATED_L2&priority=HIGH',
@@ -333,7 +308,6 @@ describe('TicketController', () => {
 
       const res = httpMocks.createResponse();
 
-      // Mock the service response
       const tickets = [
         {
           id: 'ticket123',
@@ -367,10 +341,8 @@ describe('TicketController', () => {
 
       ticketService.getTickets = jest.fn().mockResolvedValueOnce(tickets);
 
-      // Call the controller method
       await ticketController.getTickets(req as unknown as Request, res as unknown as Response);
 
-      // Assertions
       expect(ticketService.getTickets).toHaveBeenCalledWith({
         status: TicketStatus.ESCALATED_L2,
         priority: TicketPriority.HIGH
@@ -414,7 +386,6 @@ describe('TicketController', () => {
 
   describe('getTicketById', () => {
     it('should get a ticket by ID', async () => {
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'GET',
         url: '/api/tickets/ticket123',
@@ -427,7 +398,6 @@ describe('TicketController', () => {
 
       const res = httpMocks.createResponse();
 
-      // Mock the service response
       const ticket = {
         id: 'ticket123',
         title: 'Test Ticket',
@@ -465,10 +435,8 @@ describe('TicketController', () => {
 
       ticketService.getTicketById = jest.fn().mockResolvedValueOnce(ticket);
 
-      // Call the controller method
       await ticketController.getTicketById(req as unknown as Request, res as unknown as Response);
 
-      // Assertions
       expect(ticketService.getTicketById).toHaveBeenCalledWith('ticket123');
 
       expect(res._getStatusCode()).toBe(200);
@@ -488,7 +456,6 @@ describe('TicketController', () => {
     });
 
     it('should handle non-existent ticket ID', async () => {
-      // Mock request and response with non-existent ID
       const req = httpMocks.createRequest({
         method: 'GET',
         url: '/api/tickets/nonexistent',
@@ -517,12 +484,9 @@ describe('TicketController', () => {
 
   describe('resolveTicket', () => {
     it('should resolve a ticket successfully (L3_SUPPORT)', async () => {
-      // Mock data
       const resolveData = {
         resolutionNotes: 'Issue fixed in database configuration'
       };
-
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'PATCH',
         url: '/api/tickets/ticket123/resolve',
@@ -580,7 +544,7 @@ describe('TicketController', () => {
         body: resolveData,
         user: {
           id: 'user123',
-          role: UserRole.L1_AGENT  // L1 agent should not be able to resolve L3 tickets
+          role: UserRole.L1_AGENT
         }
       });
 

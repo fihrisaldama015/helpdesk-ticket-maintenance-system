@@ -4,7 +4,6 @@ import { AuthService } from '@/services/auth.service';
 import { Request, Response } from 'express';
 import * as httpMocks from 'node-mocks-http';
 
-// Mock the AuthService
 jest.mock('@/services/auth.service');
 
 describe('AuthController', () => {
@@ -12,17 +11,13 @@ describe('AuthController', () => {
   let authService: jest.Mocked<AuthService>;
 
   beforeEach(() => {
-    // Clear all mocks
     jest.clearAllMocks();
-
-    // Create a mocked instance of AuthService
     authService = new (AuthService as jest.Mock<AuthService>)() as jest.Mocked<AuthService>;
     authController = new AuthController(authService);
   });
 
   describe('register', () => {
     it('should register a new user successfully', async () => {
-      // Mock data
       const userData = {
         email: 'test@example.com',
         password: 'Password123!',
@@ -31,7 +26,6 @@ describe('AuthController', () => {
         role: UserRole.L1_AGENT
       };
 
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/api/auth/register',
@@ -76,7 +70,6 @@ describe('AuthController', () => {
     });
 
     it('should handle registration errors', async () => {
-      // Mock data
       const userData = {
         email: 'existing@example.com',
         password: 'Password123!',
@@ -85,7 +78,6 @@ describe('AuthController', () => {
         role: UserRole.L1_AGENT
       };
 
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/api/auth/register',
@@ -158,13 +150,11 @@ describe('AuthController', () => {
     });
 
     it('should handle invalid credentials', async () => {
-      // Mock data
       const loginData = {
         email: 'test@example.com',
         password: 'WrongPassword!'
       };
 
-      // Mock request and response
       const req = httpMocks.createRequest({
         method: 'POST',
         url: '/api/auth/login',
@@ -173,14 +163,10 @@ describe('AuthController', () => {
 
       const res = httpMocks.createResponse();
 
-      // Mock the service throwing an error
       const error = new Error('Invalid credentials');
       authService.login.mockRejectedValueOnce(error);
 
-      // Call the controller method
       await authController.login(req, res);
-
-      // Assertions
       expect(authService.login).toHaveBeenCalled();
       expect(res._getStatusCode()).toBe(401);
       expect(JSON.parse(res._getData())).toEqual(expect.objectContaining({

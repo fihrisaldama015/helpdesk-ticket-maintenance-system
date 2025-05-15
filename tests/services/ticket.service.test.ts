@@ -1,22 +1,36 @@
 import { CreateTicketDto, CriticalValue, TicketCategory, TicketPriority, TicketStatus, UpdateTicketDto, UserRole } from '@/models';
 import { TicketService } from '@/services/ticket.service';
-import { PrismaClient } from '@prisma/client';
 
-jest.mock('@prisma/client');
+jest.mock('@/config/prisma', () => {
+    return {
+        __esModule: true,
+        default: {
+            ticket: {
+                create: jest.fn(),
+                findMany: jest.fn(),
+                findUnique: jest.fn(),
+                update: jest.fn(),
+            },
+            ticketAction: {
+                create: jest.fn(),
+                findMany: jest.fn(),
+            },
+        }
+    }
+})
+
+import prisma from '@/config/prisma';
 
 describe('TicketService', () => {
     let ticketService: TicketService;
-    let mockPrismaClient: jest.Mocked<PrismaClient>;
 
     beforeEach(() => {
         jest.clearAllMocks();
         ticketService = new TicketService();
-        mockPrismaClient = new PrismaClient() as jest.Mocked<PrismaClient>;
     });
 
     describe('createTicket', () => {
         it('should create a new ticket and assign it to the creator', async () => {
-            // Mock data
             const ticketData: CreateTicketDto = {
                 title: 'Test Ticket',
                 description: 'This is a test ticket',
@@ -52,13 +66,11 @@ describe('TicketService', () => {
                 },
             };
 
-            mockPrismaClient.ticket.create = jest.fn().mockResolvedValueOnce(expectedResult);
+            (prisma.ticket.create as jest.Mock).mockResolvedValueOnce(expectedResult);
 
-            // Call the method
             const result = await ticketService.createTicket(ticketData, userId);
 
-            // Assertions
-            expect(mockPrismaClient.ticket.create).toHaveBeenCalledWith({
+            expect(prisma.ticket.create).toHaveBeenCalledWith({
                 data: {
                     title: ticketData.title,
                     description: ticketData.description,
@@ -66,7 +78,7 @@ describe('TicketService', () => {
                     priority: ticketData.priority,
                     expectedCompletionDate: ticketData.expectedCompletionDate,
                     createdById: userId,
-                    assignedToId: userId, // Initially assigned to creator
+                    assignedToId: userId,
                 },
                 include: {
                     createdBy: {
@@ -96,7 +108,6 @@ describe('TicketService', () => {
 
     describe('getTickets', () => {
         it('should get tickets with no filters', async () => {
-            // Mock data
             const tickets = [
                 {
                     id: 'ticket123',
@@ -156,13 +167,11 @@ describe('TicketService', () => {
                 },
             ];
 
-            mockPrismaClient.ticket.findMany = jest.fn().mockResolvedValueOnce(tickets);
+            (prisma.ticket.findMany as jest.Mock).mockResolvedValueOnce(tickets);
 
-            // Call the method
             const result = await ticketService.getTickets();
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findMany).toHaveBeenCalledWith({
+            expect(prisma.ticket.findMany).toHaveBeenCalledWith({
                 where: {},
                 include: {
                     createdBy: {
@@ -193,7 +202,6 @@ describe('TicketService', () => {
         });
 
         it('should get tickets with status filter', async () => {
-            // Mock data
             const tickets = [
                 {
                     id: 'ticket123',
@@ -225,13 +233,11 @@ describe('TicketService', () => {
                 },
             ];
 
-            mockPrismaClient.ticket.findMany = jest.fn().mockResolvedValueOnce(tickets);
+            (prisma.ticket.findMany as jest.Mock).mockResolvedValueOnce(tickets);
 
-            // Call the method with status filter
             const result = await ticketService.getTickets({ status: TicketStatus.ESCALATED_L2 });
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findMany).toHaveBeenCalledWith({
+            expect(prisma.ticket.findMany).toHaveBeenCalledWith({
                 where: { status: TicketStatus.ESCALATED_L2 },
                 include: {
                     createdBy: {
@@ -262,7 +268,6 @@ describe('TicketService', () => {
         });
 
         it('should get tickets with L2 escalation filter', async () => {
-            // Mock data
             const tickets = [
                 {
                     id: 'ticket123',
@@ -288,13 +293,11 @@ describe('TicketService', () => {
                 },
             ];
 
-            mockPrismaClient.ticket.findMany = jest.fn().mockResolvedValueOnce(tickets);
+            (prisma.ticket.findMany as jest.Mock).mockResolvedValueOnce(tickets);
 
-            // Call the method with escalation filter
             const result = await ticketService.getTickets({ escalation: 'L2' });
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findMany).toHaveBeenCalledWith({
+            expect(prisma.ticket.findMany).toHaveBeenCalledWith({
                 where: { status: TicketStatus.ESCALATED_L2 },
                 include: {
                     createdBy: {
@@ -327,7 +330,6 @@ describe('TicketService', () => {
 
     describe('getTicketById', () => {
         it('should get a ticket by ID with all relationships', async () => {
-            // Mock data
             const ticketId = 'ticket123';
             const ticket = {
                 id: ticketId,
@@ -392,13 +394,11 @@ describe('TicketService', () => {
                 ],
             };
 
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(ticket);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(ticket);
 
-            // Call the method
             const result = await ticketService.getTicketById(ticketId);
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: ticketId },
                 include: {
                     createdBy: {
@@ -442,12 +442,11 @@ describe('TicketService', () => {
         });
 
         it('should throw an error if ticket is not found', async () => {
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(null);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
-            // Call the method and expect it to throw
             await expect(ticketService.getTicketById('nonexistent')).rejects.toThrow('Ticket not found');
 
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: 'nonexistent' },
                 include: expect.any(Object),
             });
@@ -456,7 +455,6 @@ describe('TicketService', () => {
 
     describe('updateTicket', () => {
         it('should update a ticket and create an action record', async () => {
-            // Mock data
             const ticketId = 'ticket123';
             const userId = 'user456';
             const updateData: UpdateTicketDto = {
@@ -506,44 +504,22 @@ describe('TicketService', () => {
                 createdAt: new Date(),
             };
 
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(existingTicket);
-            mockPrismaClient.ticket.update = jest.fn().mockResolvedValueOnce(updatedTicket);
-            mockPrismaClient.ticketAction.create = jest.fn().mockResolvedValueOnce(newAction);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(existingTicket);
+            (prisma.ticket.update as jest.Mock).mockResolvedValueOnce(updatedTicket);
+            (prisma.ticketAction.create as jest.Mock).mockResolvedValueOnce(newAction);
 
-            // Call the method
             const result = await ticketService.updateTicket(ticketId, updateData, userId);
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: ticketId },
             });
 
-            expect(mockPrismaClient.ticket.update).toHaveBeenCalledWith({
+            expect(prisma.ticket.update).toHaveBeenCalledWith({
                 where: { id: ticketId },
                 data: updateData,
-                include: {
-                    createdBy: {
-                        select: {
-                            id: true,
-                            email: true,
-                            firstName: true,
-                            lastName: true,
-                            role: true,
-                        },
-                    },
-                    assignedTo: {
-                        select: {
-                            id: true,
-                            email: true,
-                            firstName: true,
-                            lastName: true,
-                            role: true,
-                        },
-                    },
-                },
             });
 
-            expect(mockPrismaClient.ticketAction.create).toHaveBeenCalledWith({
+            expect(prisma.ticketAction.create).toHaveBeenCalledWith({
                 data: {
                     ticketId,
                     userId,
@@ -556,7 +532,6 @@ describe('TicketService', () => {
         });
 
         it('should update status and create an action with status change description', async () => {
-            // Mock data
             const ticketId = 'ticket123';
             const userId = 'user456';
             const updateData: UpdateTicketDto = {
@@ -602,25 +577,22 @@ describe('TicketService', () => {
                 createdAt: new Date(),
             };
 
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(existingTicket);
-            mockPrismaClient.ticket.update = jest.fn().mockResolvedValueOnce(updatedTicket);
-            mockPrismaClient.ticketAction.create = jest.fn().mockResolvedValueOnce(newAction);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(existingTicket);
+            (prisma.ticket.update as jest.Mock).mockResolvedValueOnce(updatedTicket);
+            (prisma.ticketAction.create as jest.Mock).mockResolvedValueOnce(newAction);
 
-            // Call the method
             const result = await ticketService.updateTicket(ticketId, updateData, userId);
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: ticketId },
             });
 
-            expect(mockPrismaClient.ticket.update).toHaveBeenCalledWith({
+            expect(prisma.ticket.update).toHaveBeenCalledWith({
                 where: { id: ticketId },
                 data: updateData,
-                include: expect.any(Object),
             });
 
-            expect(mockPrismaClient.ticketAction.create).toHaveBeenCalledWith({
+            expect(prisma.ticketAction.create).toHaveBeenCalledWith({
                 data: {
                     ticketId,
                     userId,
@@ -633,21 +605,19 @@ describe('TicketService', () => {
         });
 
         it('should throw an error if ticket is not found', async () => {
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(null);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
-            // Call the method and expect it to throw
             await expect(
                 ticketService.updateTicket('nonexistent', { title: 'New Title' }, 'user123')
             ).rejects.toThrow('Ticket not found');
 
-            expect(mockPrismaClient.ticket.update).not.toHaveBeenCalled();
-            expect(mockPrismaClient.ticketAction.create).not.toHaveBeenCalled();
+            expect(prisma.ticket.update).not.toHaveBeenCalled();
+            expect(prisma.ticketAction.create).not.toHaveBeenCalled();
         });
     });
 
     describe('escalateTicket', () => {
         it('should escalate a ticket to L2 and create an action record', async () => {
-            // Mock data
             const ticketId = 'ticket123';
             const userId = 'user123';
             const notes = 'Cannot resolve at L1, needs L2 support';
@@ -686,27 +656,24 @@ describe('TicketService', () => {
                 createdAt: new Date(),
             };
 
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(existingTicket);
-            mockPrismaClient.ticket.update = jest.fn().mockResolvedValueOnce(updatedTicket);
-            mockPrismaClient.ticketAction.create = jest.fn().mockResolvedValueOnce(newAction);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(existingTicket);
+            (prisma.ticket.update as jest.Mock).mockResolvedValueOnce(updatedTicket);
+            (prisma.ticketAction.create as jest.Mock).mockResolvedValueOnce(newAction);
 
-            // Call the method
             const result = await ticketService.escalateTicket(ticketId, userId, notes, 'L2');
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: ticketId },
             });
 
-            expect(mockPrismaClient.ticket.update).toHaveBeenCalledWith({
+            expect(prisma.ticket.update).toHaveBeenCalledWith({
                 where: { id: ticketId },
                 data: {
                     status: TicketStatus.ESCALATED_L2,
                 },
-                include: expect.any(Object),
             });
 
-            expect(mockPrismaClient.ticketAction.create).toHaveBeenCalledWith({
+            expect(prisma.ticketAction.create).toHaveBeenCalledWith({
                 data: {
                     ticketId,
                     userId,
@@ -720,7 +687,6 @@ describe('TicketService', () => {
         });
 
         it('should escalate a ticket to L3 with critical value and create an action record', async () => {
-            // Mock data
             const ticketId = 'ticket123';
             const userId = 'user456';
             const notes = 'Serious issue, needs L3 attention';
@@ -767,28 +733,25 @@ describe('TicketService', () => {
                 createdAt: new Date(),
             };
 
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(existingTicket);
-            mockPrismaClient.ticket.update = jest.fn().mockResolvedValueOnce(updatedTicket);
-            mockPrismaClient.ticketAction.create = jest.fn().mockResolvedValueOnce(newAction);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(existingTicket);
+            (prisma.ticket.update as jest.Mock).mockResolvedValueOnce(updatedTicket);
+            (prisma.ticketAction.create as jest.Mock).mockResolvedValueOnce(newAction);
 
-            // Call the method
             const result = await ticketService.escalateTicket(ticketId, userId, notes, 'L3', criticalValue);
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: ticketId },
             });
 
-            expect(mockPrismaClient.ticket.update).toHaveBeenCalledWith({
+            expect(prisma.ticket.update).toHaveBeenCalledWith({
                 where: { id: ticketId },
                 data: {
                     status: TicketStatus.ESCALATED_L3,
                     criticalValue,
                 },
-                include: expect.any(Object),
             });
 
-            expect(mockPrismaClient.ticketAction.create).toHaveBeenCalledWith({
+            expect(prisma.ticketAction.create).toHaveBeenCalledWith({
                 data: {
                     ticketId,
                     userId,
@@ -804,7 +767,6 @@ describe('TicketService', () => {
 
     describe('resolveTicket', () => {
         it('should resolve a ticket and create a resolution action record', async () => {
-            // Mock data
             const ticketId = 'ticket123';
             const userId = 'user789';
             const resolutionNotes = 'Issue fixed in database configuration';
@@ -849,27 +811,24 @@ describe('TicketService', () => {
                 createdAt: new Date(),
             };
 
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(existingTicket);
-            mockPrismaClient.ticket.update = jest.fn().mockResolvedValueOnce(resolvedTicket);
-            mockPrismaClient.ticketAction.create = jest.fn().mockResolvedValueOnce(newAction);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(existingTicket);
+            (prisma.ticket.update as jest.Mock).mockResolvedValueOnce(resolvedTicket);
+            (prisma.ticketAction.create as jest.Mock).mockResolvedValueOnce(newAction);
 
-            // Call the method
             const result = await ticketService.resolveTicket(ticketId, userId, resolutionNotes);
 
-            // Assertions
-            expect(mockPrismaClient.ticket.findUnique).toHaveBeenCalledWith({
+            expect(prisma.ticket.findUnique).toHaveBeenCalledWith({
                 where: { id: ticketId },
             });
 
-            expect(mockPrismaClient.ticket.update).toHaveBeenCalledWith({
+            expect(prisma.ticket.update).toHaveBeenCalledWith({
                 where: { id: ticketId },
                 data: {
                     status: TicketStatus.RESOLVED,
                 },
-                include: expect.any(Object),
             });
 
-            expect(mockPrismaClient.ticketAction.create).toHaveBeenCalledWith({
+            expect(prisma.ticketAction.create).toHaveBeenCalledWith({
                 data: {
                     ticketId,
                     userId,
@@ -883,15 +842,14 @@ describe('TicketService', () => {
         });
 
         it('should throw an error if ticket is not found', async () => {
-            mockPrismaClient.ticket.findUnique = jest.fn().mockResolvedValueOnce(null);
+            (prisma.ticket.findUnique as jest.Mock).mockResolvedValueOnce(null);
 
-            // Call the method and expect it to throw
             await expect(
                 ticketService.resolveTicket('nonexistent', 'user123', 'Resolution notes')
             ).rejects.toThrow('Ticket not found');
 
-            expect(mockPrismaClient.ticket.update).not.toHaveBeenCalled();
-            expect(mockPrismaClient.ticketAction.create).not.toHaveBeenCalled();
+            expect(prisma.ticket.update).not.toHaveBeenCalled();
+            expect(prisma.ticketAction.create).not.toHaveBeenCalled();
         });
     });
 });

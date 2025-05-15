@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/config/prisma';
 import { UserRole } from '@/models';
 
 declare global {
@@ -15,7 +15,6 @@ declare global {
   }
 }
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {

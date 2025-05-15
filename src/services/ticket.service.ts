@@ -5,12 +5,11 @@ import {
   TicketStatus,
   UpdateTicketDto
 } from '@/models';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/config/prisma';
 
 export class TicketService {
-  private prisma = new PrismaClient();
   async createTicket(ticketData: CreateTicketDto, userId: string) {
-    return this.prisma.ticket.create({
+    return prisma.ticket.create({
       data: {
         title: ticketData.title,
         description: ticketData.description,
@@ -55,7 +54,7 @@ export class TicketService {
       if (filters.escalation === 'L2') where.status = TicketStatus.ESCALATED_L2;
       else if (filters.escalation === 'L3') where.status = TicketStatus.ESCALATED_L3;
     }
-    return this.prisma.ticket.findMany({
+    return prisma.ticket.findMany({
       where,
       include: {
         createdBy: {
@@ -84,7 +83,7 @@ export class TicketService {
   }
 
   async getTicketById(ticketId: string) {
-    const ticket = await this.prisma.ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
       include: {
         createdBy: {
@@ -131,7 +130,7 @@ export class TicketService {
   }
 
   async updateTicket(ticketId: string, updateData: UpdateTicketDto, userId: string) {
-    const ticket = await this.prisma.ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId }
     });
     if (!ticket) throw new Error('Ticket not found');
@@ -139,11 +138,11 @@ export class TicketService {
     if (updateData.status && updateData.status !== ticket.status) {
       actionDescription = `Changed status from ${ticket.status} to ${updateData.status}`;
     }
-    const updatedTicket = await this.prisma.ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id: ticketId },
       data: updateData,
     });
-    await this.prisma.ticketAction.create({
+    await prisma.ticketAction.create({
       data: {
         ticketId,
         userId,
@@ -162,7 +161,7 @@ export class TicketService {
     targetLevel: 'L2' | 'L3',
     criticalValue?: CriticalValue
   ) {
-    const ticket = await this.prisma.ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId }
     });
     if (!ticket) throw new Error('Ticket not found');
@@ -173,11 +172,11 @@ export class TicketService {
       status: newStatus
     };
     if (criticalValue) updateData.criticalValue = criticalValue;
-    const updatedTicket = await this.prisma.ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id: ticketId },
       data: updateData,
     });
-    await this.prisma.ticketAction.create({
+    await prisma.ticketAction.create({
       data: {
         ticketId,
         userId,
@@ -190,11 +189,11 @@ export class TicketService {
   }
 
   async addTicketAction(actionData: CreateTicketActionDto, userId: string) {
-    const ticket = await this.prisma.ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: actionData.ticketId }
     });
     if (!ticket) throw new Error('Ticket not found');
-    const action = await this.prisma.ticketAction.create({
+    const action = await prisma.ticketAction.create({
       data: {
         ticketId: actionData.ticketId,
         userId,
@@ -215,7 +214,7 @@ export class TicketService {
       }
     });
     if (actionData.newStatus) {
-      await this.prisma.ticket.update({
+      await prisma.ticket.update({
         where: { id: actionData.ticketId },
         data: {
           status: actionData.newStatus
@@ -226,17 +225,17 @@ export class TicketService {
   }
 
   async resolveTicket(ticketId: string, userId: string, resolutionNotes: string) {
-    const ticket = await this.prisma.ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId }
     });
     if (!ticket) throw new Error('Ticket not found');
-    const updatedTicket = await this.prisma.ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id: ticketId },
       data: {
         status: TicketStatus.RESOLVED
       }
     });
-    await this.prisma.ticketAction.create({
+    await prisma.ticketAction.create({
       data: {
         ticketId,
         userId,
@@ -249,7 +248,7 @@ export class TicketService {
   }
 
   async getTicketsByAssignee(userId: string) {
-    return this.prisma.ticket.findMany({
+    return prisma.ticket.findMany({
       where: {
         assignedToId: userId,
         status: {
@@ -294,7 +293,7 @@ export class TicketService {
         in: [CriticalValue.C1, CriticalValue.C2]
       };
     }
-    return this.prisma.ticket.findMany({
+    return prisma.ticket.findMany({
       where,
       include: {
         createdBy: {
