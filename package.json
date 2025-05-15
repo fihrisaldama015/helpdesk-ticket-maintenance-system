@@ -9,6 +9,8 @@
     "start": "node dist/server.js",
     "migrate": "dotenv -e .env -- npx prisma migrate dev",
     "studio": "dotenv -e .env -- npx prisma studio",
+    "seed": "dotenv -e .env -- ts-node prisma/seed.ts",
+    "seed:test": "dotenv -e .env.test -- ts-node prisma/seed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "migrate:test": "dotenv -e .env.test -- npx prisma migrate dev"
