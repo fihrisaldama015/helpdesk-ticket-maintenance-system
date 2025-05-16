@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import prisma from '@/config/prisma';
-import { UserRole } from '@/models';
+import prisma from '../config/prisma';
+import { UserRole } from '../models';
 
 declare global {
   namespace Express {

@@ -1,7 +1,7 @@
-import { TicketController } from '@/controllers/ticket.controller';
-import { authenticate, authorize } from '@/middlewares/auth.middleware';
-import { UserRole } from '@/models';
-import { TicketService } from '@/services/ticket.service';
+import { TicketController } from '../controllers/ticket.controller';
+import { authenticate, authorize } from '../middlewares/auth.middleware';
+import { UserRole } from '../models';
+import { TicketService } from '../services/ticket.service';
 import express from 'express';
 
 const router = express.Router();

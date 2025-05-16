@@ -4,8 +4,8 @@ import {
   CriticalValue,
   TicketStatus,
   UpdateTicketDto
-} from '@/models';
-import prisma from '@/config/prisma';
+} from '../models';
+import prisma from '../config/prisma';
 
 export class TicketService {
   async createTicket(ticketData: CreateTicketDto, userId: string) {
@@ -248,6 +248,7 @@ export class TicketService {
   }
 
   async getTicketsByAssignee(userId: string) {
+    console.log('hi')
     return prisma.ticket.findMany({
       where: {
         assignedToId: userId,

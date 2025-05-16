@@ -1,7 +1,7 @@
-import { CreateUserDto, User, UserRole } from '@/models';
+import { CreateUserDto, User, UserRole } from '../models';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import prisma from '@/config/prisma';
+import prisma from '../config/prisma';
 
 // Error messages
 export const USER_NOT_FOUND = 'User not found';

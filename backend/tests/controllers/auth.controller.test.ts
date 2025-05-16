@@ -168,7 +168,7 @@ describe('AuthController', () => {
 
       await authController.login(req, res);
       expect(authService.login).toHaveBeenCalled();
-      expect(res._getStatusCode()).toBe(401);
+      expect(res._getStatusCode()).toBe(400);
       expect(JSON.parse(res._getData())).toEqual(expect.objectContaining({
         message: 'Invalid credentials'
       }));

@@ -3,8 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { config } from 'dotenv';
 
-// import authRoutes from './routes/auth.routes';
-// import ticketRoutes from './routes/ticket.routes';
+import authRoutes from './routes/auth.route';
+import ticketRoutes from './routes/ticket.route';
 
 config();
 
@@ -15,8 +15,8 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.use('/api/auth', authRoutes);
-// app.use('/api/tickets', ticketRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Helpdesk Ticket System API' });

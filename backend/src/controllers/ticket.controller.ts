@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { TicketService } from '@/services/ticket.service';
-import { TicketStatus, UserRole, CriticalValue } from '@/models';
+import { TicketService } from '../services/ticket.service';
+import { TicketStatus, UserRole, CriticalValue } from '../models';
 
 export class TicketController {
   constructor(private ticketService: TicketService) {}

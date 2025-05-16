@@ -1,5 +1,5 @@
-import { UserRole } from '@/models';
-import { AuthService, INVALID_CREDENTIALS, USER_NOT_FOUND, USER_WITH_EMAIL_ALREADY_EXISTS } from '@/services/auth.service';
+import { UserRole } from '../models';
+import { AuthService, INVALID_CREDENTIALS, USER_NOT_FOUND, USER_WITH_EMAIL_ALREADY_EXISTS } from '../services/auth.service';
 import { Request, Response } from 'express';
 
 interface RegisterRequest {
@@ -26,6 +26,7 @@ export class AuthController {
     try {
       const { email, password, firstName, lastName, role } = req.body as RegisterRequest;
       if (!this.validateRegisterRequest(req.body)) {
+        console.log('Invalid register request body', req.body);
         res.status(400).json({ message: this.INVALID_REGISTER_REQUEST_BODY });
         return;
       }
@@ -70,7 +71,7 @@ export class AuthController {
       res.status(200).json(result);
     } catch (error: any) {
       if (error.message === INVALID_CREDENTIALS || error.message === USER_NOT_FOUND) {
-        res.status(401).json({ message: error.message });
+        res.status(400).json({ message: error.message });
       } else {
         console.error('[CONTROLLER] Login error:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -93,7 +94,7 @@ export class AuthController {
 
   private validateRegisterRequest(req: RegisterRequest): boolean {
     return typeof req.email === 'string' && req.email.length > 0 &&
-           typeof req.password === 'string' && req.password.length > 6 &&
+           typeof req.password === 'string' && req.password.length >= 6 &&
            typeof req.firstName === 'string' && req.firstName.length > 0 &&
            typeof req.lastName === 'string' && req.lastName.length > 0
   };
