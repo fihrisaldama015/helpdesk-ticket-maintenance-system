@@ -12,7 +12,7 @@ const ticketController = new TicketController(ticketService);
 router.use(authenticate);
 // ALL ROLE
 router.get('/', ticketController.getTickets.bind(ticketController));
-router.get('/:id', ticketController.getTicketById.bind(ticketController));
+router.get('/detail/:id', ticketController.getTicketById.bind(ticketController));
 router.get('/my-tickets', ticketController.getMyTickets.bind(ticketController));
 
 // L1_AGENT (Helpdesk Agent)

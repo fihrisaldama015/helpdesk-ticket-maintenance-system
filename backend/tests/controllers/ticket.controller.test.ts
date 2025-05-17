@@ -1,7 +1,6 @@
 import { TicketController } from '@/controllers/ticket.controller';
 import { CriticalValue, TicketCategory, TicketPriority, TicketStatus, UserRole } from '@/models';
 import { TicketService } from '@/services/ticket.service';
-import { Request, Response } from 'express';
 import * as httpMocks from 'node-mocks-http';
 
 jest.mock('@/services/ticket.service');
@@ -138,7 +137,7 @@ describe('TicketController', () => {
         category: TicketCategory.SOFTWARE,
         priority: TicketPriority.MEDIUM,
         status: TicketStatus.ATTENDING,
-        criticalValue: 'NONE',
+        criticalValue: CriticalValue.NONE,
         expectedCompletionDate: new Date('2025-06-01'),
         createdById: 'user123',
         assignedToId: 'user123',
@@ -146,9 +145,9 @@ describe('TicketController', () => {
         updatedAt: new Date()
       };
 
-      ticketService.updateTicket = jest.fn().mockResolvedValueOnce(updatedTicket);
+      ticketService.updateTicket.mockResolvedValueOnce(updatedTicket);
 
-      await ticketController.updateTicketStatus(req as unknown as Request, res as unknown as Response);
+      await ticketController.updateTicketStatus(req, res);
 
       expect(ticketService.updateTicket).toHaveBeenCalledWith(
         'ticket123',
@@ -238,7 +237,7 @@ describe('TicketController', () => {
         category: TicketCategory.NETWORK,
         priority: TicketPriority.HIGH,
         status: TicketStatus.ESCALATED_L2,
-        criticalValue: 'C2',
+        criticalValue: CriticalValue.C2,
         expectedCompletionDate: new Date('2025-06-01'),
         createdById: 'user123',
         assignedToId: 'user456',
@@ -246,9 +245,9 @@ describe('TicketController', () => {
         updatedAt: new Date()
       };
 
-      ticketService.updateTicket = jest.fn().mockResolvedValueOnce(updatedTicket);
+      ticketService.updateTicket.mockResolvedValueOnce(updatedTicket);
 
-      await ticketController.setCriticalValue(req as unknown as Request, res as unknown as Response);
+      await ticketController.setCriticalValue(req, res);
 
       expect(ticketService.updateTicket).toHaveBeenCalledWith(
         'ticket123',
@@ -280,7 +279,7 @@ describe('TicketController', () => {
 
       const res = httpMocks.createResponse();
 
-      await ticketController.setCriticalValue(req as unknown as Request, res as unknown as Response);
+      await ticketController.setCriticalValue(req, res);
 
       expect(res._getStatusCode()).toBe(403);
       expect(JSON.parse(res._getData())).toEqual(expect.objectContaining({
@@ -316,12 +315,20 @@ describe('TicketController', () => {
           category: TicketCategory.NETWORK,
           priority: TicketPriority.HIGH,
           status: TicketStatus.ESCALATED_L2,
-          criticalValue: 'NONE',
+          criticalValue: CriticalValue.NONE,
           expectedCompletionDate: new Date('2025-06-01'),
           createdById: 'user123',
           assignedToId: null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          createdBy: {
+            id: 'user123',
+            email: 'l2@example.com',
+            firstName: 'L2',
+            lastName: 'Support',
+            role: UserRole.L2_SUPPORT,
+          },
+          assignedTo: null,
         },
         {
           id: 'ticket456',
@@ -330,18 +337,26 @@ describe('TicketController', () => {
           category: TicketCategory.HARDWARE,
           priority: TicketPriority.HIGH,
           status: TicketStatus.ESCALATED_L2,
-          criticalValue: 'NONE',
+          criticalValue: CriticalValue.NONE,
           expectedCompletionDate: new Date('2025-06-02'),
           createdById: 'user123',
           assignedToId: null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          createdBy: {
+            id: 'user123',
+            email: 'l2@example.com',
+            firstName: 'L2',
+            lastName: 'Support',
+            role: UserRole.L2_SUPPORT,
+          },
+          assignedTo: null,
         }
       ];
 
-      ticketService.getTickets = jest.fn().mockResolvedValueOnce(tickets);
+      ticketService.getTickets.mockResolvedValueOnce(tickets);
 
-      await ticketController.getTickets(req as unknown as Request, res as unknown as Response);
+      await ticketController.getTickets(req, res);
 
       expect(ticketService.getTickets).toHaveBeenCalledWith({
         status: TicketStatus.ESCALATED_L2,
@@ -388,7 +403,7 @@ describe('TicketController', () => {
     it('should get a ticket by ID', async () => {
       const req = httpMocks.createRequest({
         method: 'GET',
-        url: '/api/tickets/ticket123',
+        url: '/api/tickets/detail/ticket123',
         params: { id: 'ticket123' },
         user: {
           id: 'user456',
@@ -405,10 +420,24 @@ describe('TicketController', () => {
         category: TicketCategory.NETWORK,
         priority: TicketPriority.HIGH,
         status: TicketStatus.ESCALATED_L2,
-        criticalValue: 'C2',
+        criticalValue: CriticalValue.C2,
         expectedCompletionDate: new Date('2025-06-01'),
         createdById: 'user123',
+        createdBy: {
+          id: 'user123',
+          email: 'creator@example.com',
+          firstName: 'Creator',
+          lastName: 'User',
+          role: UserRole.L1_AGENT
+        },
         assignedToId: 'user456',
+        assignedTo: {
+          id: 'user456',
+          email: 'assignee@example.com',
+          firstName: 'Assignee',
+          lastName: 'User',
+          role: UserRole.L2_SUPPORT
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
         actions: [
@@ -416,6 +445,13 @@ describe('TicketController', () => {
             id: 'action1',
             ticketId: 'ticket123',
             userId: 'user123',
+            user: {
+              id: 'user123',
+              email: 'creator@example.com',
+              firstName: 'Creator',
+              lastName: 'User',
+              role: UserRole.L1_AGENT
+            },
             action: 'Created ticket',
             notes: null,
             newStatus: TicketStatus.NEW,
@@ -425,6 +461,13 @@ describe('TicketController', () => {
             id: 'action2',
             ticketId: 'ticket123',
             userId: 'user123',
+            user: {
+              id: 'user123',
+              email: 'creator@example.com',
+              firstName: 'Creator',
+              lastName: 'User',
+              role: UserRole.L1_AGENT
+            },
             action: 'Updated status',
             notes: 'Cannot resolve at L1',
             newStatus: TicketStatus.ESCALATED_L2,
@@ -433,9 +476,9 @@ describe('TicketController', () => {
         ]
       };
 
-      ticketService.getTicketById = jest.fn().mockResolvedValueOnce(ticket);
+      ticketService.getTicketById.mockResolvedValueOnce(ticket);
 
-      await ticketController.getTicketById(req as unknown as Request, res as unknown as Response);
+      await ticketController.getTicketById(req, res);
 
       expect(ticketService.getTicketById).toHaveBeenCalledWith('ticket123');
 
@@ -458,7 +501,7 @@ describe('TicketController', () => {
     it('should handle non-existent ticket ID', async () => {
       const req = httpMocks.createRequest({
         method: 'GET',
-        url: '/api/tickets/nonexistent',
+        url: '/api/tickets/detail/nonexistent',
         params: { id: 'nonexistent' },
         user: {
           id: 'user456',
