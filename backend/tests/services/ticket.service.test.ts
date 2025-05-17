@@ -432,7 +432,7 @@ describe('TicketService', () => {
                             },
                         },
                         orderBy: {
-                            createdAt: 'asc',
+                            createdAt: 'desc',
                         },
                     },
                 },

@@ -117,7 +117,7 @@ export class TicketService {
             }
           },
           orderBy: {
-            createdAt: 'asc'
+            createdAt: 'desc'
           }
         }
       }
@@ -248,13 +248,9 @@ export class TicketService {
   }
 
   async getTicketsByAssignee(userId: string) {
-    console.log('hi')
     return prisma.ticket.findMany({
       where: {
         assignedToId: userId,
-        status: {
-          not: TicketStatus.RESOLVED
-        }
       },
       include: {
         createdBy: {
