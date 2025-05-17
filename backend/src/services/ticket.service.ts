@@ -6,6 +6,7 @@ import {
   UpdateTicketDto
 } from '../models';
 import prisma from '../config/prisma';
+import { UserRole } from '@prisma/client';
 
 export class TicketService {
   async createTicket(ticketData: CreateTicketDto, userId: string) {
@@ -129,28 +130,68 @@ export class TicketService {
     return ticket;
   }
 
-  async updateTicket(ticketId: string, updateData: UpdateTicketDto, userId: string) {
+  async updateTicket(ticketId: string, updateData: UpdateTicketDto, userId: string, userRole?: UserRole) {
     const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId }
     });
     if (!ticket) throw new Error('Ticket not found');
     let actionDescription = 'Updated ticket details';
+    if (updateData.criticalValue && updateData.criticalValue !== ticket.criticalValue) {
+      actionDescription = `Changed critical value from ${ticket.criticalValue} to ${updateData.criticalValue}`;
+    }
     if (updateData.status && updateData.status !== ticket.status) {
       actionDescription = `Changed status from ${ticket.status} to ${updateData.status}`;
     }
+    if (userRole && userRole !== UserRole.L1_AGENT) {
+      await prisma.ticketAction.create({
+        data: {
+          ticketId,
+          userId,
+          action: actionDescription,
+          newStatus: updateData.status
+        },
+      });
+    }
     const updatedTicket = await prisma.ticket.update({
       where: { id: ticketId },
-      data: updateData,
-    });
-    await prisma.ticketAction.create({
-      data: {
-        ticketId,
-        userId,
-        action: actionDescription,
-        newStatus: updateData.status
+      data: { ...updateData, assignedToId: userId },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true
+          }
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true
+          }
+        },
+        actions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       }
     });
-
     return updatedTicket;
   }
 
@@ -172,10 +213,6 @@ export class TicketService {
       status: newStatus
     };
     if (criticalValue) updateData.criticalValue = criticalValue;
-    const updatedTicket = await prisma.ticket.update({
-      where: { id: ticketId },
-      data: updateData,
-    });
     await prisma.ticketAction.create({
       data: {
         ticketId,
@@ -183,6 +220,46 @@ export class TicketService {
         action: `Escalated to ${targetLevel}`,
         notes,
         newStatus
+      }
+    });
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: updateData,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true
+          }
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true
+          }
+        },
+        actions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       }
     });
     return updatedTicket;
@@ -229,12 +306,6 @@ export class TicketService {
       where: { id: ticketId }
     });
     if (!ticket) throw new Error('Ticket not found');
-    const updatedTicket = await prisma.ticket.update({
-      where: { id: ticketId },
-      data: {
-        status: TicketStatus.RESOLVED
-      }
-    });
     await prisma.ticketAction.create({
       data: {
         ticketId,
@@ -242,6 +313,49 @@ export class TicketService {
         action: 'Resolved ticket',
         notes: resolutionNotes,
         newStatus: TicketStatus.RESOLVED
+      }
+    });
+    const updatedTicket = await prisma.ticket.update({
+      where: { id: ticketId },
+      data: {
+        status: TicketStatus.RESOLVED,
+        assignedToId: userId
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true
+          }
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true
+          }
+        },
+        actions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       }
     });
     return updatedTicket;

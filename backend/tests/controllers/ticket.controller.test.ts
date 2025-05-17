@@ -258,7 +258,7 @@ describe('TicketController', () => {
       expect(res._getStatusCode()).toBe(200);
       expect(JSON.parse(res._getData())).toEqual(expect.objectContaining({
         id: 'ticket123',
-        criticalValue: 'C2'
+        criticalValue: 'C2',
       }));
     });
 

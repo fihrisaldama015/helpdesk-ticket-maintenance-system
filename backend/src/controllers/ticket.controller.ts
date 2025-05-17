@@ -3,7 +3,7 @@ import { TicketService } from '../services/ticket.service';
 import { TicketStatus, UserRole, CriticalValue } from '../models';
 
 export class TicketController {
-  constructor(private ticketService: TicketService) {}
+  constructor(private ticketService: TicketService) { }
 
   async createTicket(req: Request, res: Response): Promise<void> {
     try {
@@ -196,7 +196,8 @@ export class TicketController {
       const ticket = await this.ticketService.updateTicket(
         id,
         { criticalValue },
-        req.user.id
+        req.user.id,
+        req.user.role
       );
       res.status(200).json(ticket);
     } catch (error: any) {
@@ -230,7 +231,12 @@ export class TicketController {
         },
         req.user.id
       );
-      res.status(201).json(ticketAction);
+      const ticket = await this.ticketService.updateTicket(
+        id,
+        { assignedToId: req.user.id },
+        req.user.id
+      );
+      res.status(201).json(ticket);
     } catch (error: any) {
       if (error.message === 'Ticket not found') {
         res.status(404).json({ message: error.message });
@@ -247,7 +253,7 @@ export class TicketController {
         res.status(401).json({ message: 'Not authenticated' });
         return;
       }
-      if(req.user.role !== UserRole.L3_SUPPORT){
+      if (req.user.role !== UserRole.L3_SUPPORT) {
         res.status(403).json({ message: 'not authorized' });
         return;
       }
