@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Button from '../../components/ui/Button';
 import useAuthStore from '../../store/authStore';
 import { UserRole } from '../../types';
+import AuthBackgroundOverlay from './AuthBackgroundOverlay';
 
 interface RegisterFormInputs {
   firstName: string;
@@ -20,7 +21,9 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register: registerUser, isAuthenticated, error, clearError, isLoading } = useAuthStore();
   const [showError, setShowError] = useState(false);
-  
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -31,10 +34,7 @@ const Register: React.FC = () => {
   const password = watch('password');
 
   useEffect(() => {
-    // Reset error state when component mounts
     clearError();
-    
-    // Redirect if already authenticated
     if (isAuthenticated) {
       navigate('/dashboard');
     }
@@ -46,7 +46,6 @@ const Register: React.FC = () => {
       const timer = setTimeout(() => {
         setShowError(false);
       }, 5000);
-
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -59,7 +58,6 @@ const Register: React.FC = () => {
       data.password,
       data.role
     );
-    
     if (success) {
       navigate('/dashboard');
     }
@@ -67,31 +65,21 @@ const Register: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-[calc(100vh-13rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <AuthBackgroundOverlay />
+      <div className="min-h-[calc(100vh-13rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 animate-fadeInUp">
             Create a new account
           </h2>
         </div>
-
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-white/70 backdrop-blur-lg py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 glass-card animate-fadeInUp">
             {showError && error && (
-              <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
+              <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 transition-opacity duration-500 animate-fadeIn">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-red-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
+                    <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3">
@@ -100,63 +88,45 @@ const Register: React.FC = () => {
                 </div>
               </div>
             )}
-
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Full name
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  First name
                 </label>
-                <div className="mt-1 relative">
+                <div className="mt-1 relative transition-all">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="firstName"
                     type="text"
-                    autoComplete="name"
-                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                      errors.firstName ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                    {...register('firstName', {
-                      required: 'First name is required',
-                      minLength: {
-                        value: 2,
-                        message: 'First name must be at least 2 characters',
-                      },
-                    })}
+                    autoComplete="given-name"
+                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${errors.firstName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
+                    {...register('firstName', { required: 'First name is required' })}
                   />
                 </div>
                 {errors.firstName && (
-                  <p className="mt-2 text-sm text-red-600">{errors.firstName.message}</p>
+                  <p className="mt-2 text-sm text-red-600 animate-fadeInUp">{errors.firstName.message}</p>
                 )}
               </div>
-
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                   Last name
                 </label>
-                <div className="mt-1 relative">
+                <div className="mt-1 relative transition-all">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="lastName"
                     type="text"
-                    autoComplete="name"
-                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                      errors.lastName ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
-                    {...register('lastName', {
-                      required: 'Last name is required',
-                      minLength: {
-                        value: 2,
-                        message: 'Last name must be at least 2 characters',
-                      },
-                    })}
+                    autoComplete="family-name"
+                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${errors.lastName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
+                    {...register('lastName', { required: 'Last name is required' })}
                   />
                 </div>
                 {errors.lastName && (
-                  <p className="mt-2 text-sm text-red-600">{errors.lastName.message}</p>
+                  <p className="mt-2 text-sm text-red-600 animate-fadeInUp">{errors.lastName.message}</p>
                 )}
               </div>
 
@@ -193,17 +163,15 @@ const Register: React.FC = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <div className="mt-1 relative">
+                <div className="mt-1 relative transition-all">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
-                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                      errors.password ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    className={`appearance-none block w-full pl-10 pr-10 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
                     {...register('password', {
                       required: 'Password is required',
                       minLength: {
@@ -212,9 +180,18 @@ const Register: React.FC = () => {
                       },
                     })}
                   />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-500 transition-colors"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
+                  <p className="mt-2 text-sm text-red-600 animate-fadeInUp">{errors.password.message}</p>
                 )}
               </div>
 
@@ -222,25 +199,32 @@ const Register: React.FC = () => {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                   Confirm Password
                 </label>
-                <div className="mt-1 relative">
+                <div className="mt-1 relative transition-all">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     autoComplete="new-password"
-                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                      errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    className={`appearance-none block w-full pl-10 pr-10 py-2 border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
                     {...register('confirmPassword', {
                       required: 'Please confirm your password',
                       validate: value => value === password || 'Passwords do not match',
                     })}
                   />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-500 transition-colors"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-2 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                  <p className="mt-2 text-sm text-red-600 animate-fadeInUp">{errors.confirmPassword.message}</p>
                 )}
               </div>
 

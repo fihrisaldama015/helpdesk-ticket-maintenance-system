@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { CalendarClock, FileText, Tag } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { CalendarClock, FileText, TagIcon } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Button from '../../components/ui/Button';
 import useTicketStore from '../../store/ticketStore';
 import { TicketCategory, TicketPriority } from '../../types';
 
+// Form input types
 interface CreateTicketFormInputs {
   title: string;
   description: string;
@@ -19,14 +19,16 @@ const CreateTicket: React.FC = () => {
   const navigate = useNavigate();
   const { createTicket, isLoading, error } = useTicketStore();
   const [showError, setShowError] = useState(false);
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CreateTicketFormInputs>();
+  const [formData, setFormData] = useState<CreateTicketFormInputs>({
+    title: '',
+    description: '',
+    category: '' as TicketCategory,
+    priority: '' as TicketPriority,
+    expectedCompletionDate: '',
+  });
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof CreateTicketFormInputs, string>>>({});
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       setShowError(true);
       const timer = setTimeout(() => {
@@ -37,13 +39,60 @@ const CreateTicket: React.FC = () => {
     }
   }, [error]);
 
-  const onSubmit = async (data: CreateTicketFormInputs) => {
+  const validateForm = () => {
+    const errors: Partial<Record<keyof CreateTicketFormInputs, string>> = {};
+    
+    if (!formData.title) {
+      errors.title = 'Title is required';
+    } else if (formData.title.length < 5) {
+      errors.title = 'Title must be at least 5 characters';
+    }
+    
+    if (!formData.description) {
+      errors.description = 'Description is required';
+    } else if (formData.description.length < 10) {
+      errors.description = 'Description must be at least 10 characters';
+    }
+    
+    if (!formData.category) {
+      errors.category = 'Category is required';
+    }
+    
+    if (!formData.priority) {
+      errors.priority = 'Priority is required';
+    }
+    
+    if (!formData.expectedCompletionDate) {
+      errors.expectedCompletionDate = 'Expected completion date is required';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error for this field when user starts typing
+    if (formErrors[name as keyof CreateTicketFormInputs]) {
+      setFormErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     const success = await createTicket(
-      data.title,
-      data.description,
-      data.category,
-      data.priority,
-      data.expectedCompletionDate
+      formData.title,
+      formData.description,
+      formData.category,
+      formData.priority,
+      formData.expectedCompletionDate
     );
     
     if (success) {
@@ -57,19 +106,19 @@ const CreateTicket: React.FC = () => {
 
   return (
     <Layout requireAuth allowedRoles={['L1_AGENT']}>
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-5 border-b border-gray-200">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+      <div className="bg-white shadow-md rounded-lg">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="text-xl font-semibold text-gray-800">
             Create New Ticket
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            Create a new support ticket with the information below.
+            Create a new support ticket with the information below. Our support team will respond as soon as possible.
           </p>
         </div>
         
         <div className="px-6 py-5">
           {showError && error && (
-            <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 animate-fadeIn">
+            <div className="mb-5 bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -87,85 +136,75 @@ const CreateTicket: React.FC = () => {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="text-sm font-medium text-red-700">{error}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
                 Title
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FileText className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="title"
+                  name="title"
                   type="text"
-                  className={`pl-10 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md transition-all duration-200 ${
-                    errors.title ? 'border-red-300' : ''
+                  value={formData.title}
+                  onChange={handleChange}
+                  className={`pl-10 py-2 block w-full text-gray-700 bg-white border rounded-md outline-none ring-0 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    formErrors.title ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Brief description of the issue"
-                  {...register('title', {
-                    required: 'Title is required',
-                    minLength: {
-                      value: 5,
-                      message: 'Title must be at least 5 characters',
-                    },
-                  })}
                 />
-                {errors.title && (
-                  <p className="mt-2 text-sm text-red-600">{errors.title.message}</p>
-                )}
               </div>
+              {formErrors.title && (
+                <p className="mt-1 text-sm text-red-600">{formErrors.title}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
-              <div className="mt-1">
-                <textarea
-                  id="description"
-                  rows={4}
-                  className={`shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md transition-all duration-200 ${
-                    errors.description ? 'border-red-300' : ''
-                  }`}
-                  placeholder="Detailed explanation of the issue, including any error messages or steps to reproduce"
-                  {...register('description', {
-                    required: 'Description is required',
-                    minLength: {
-                      value: 10,
-                      message: 'Description must be at least 10 characters',
-                    },
-                  })}
-                />
-                {errors.description && (
-                  <p className="mt-2 text-sm text-red-600">{errors.description.message}</p>
-                )}
-              </div>
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                value={formData.description}
+                onChange={handleChange}
+                className={`block w-full text-gray-700 bg-white border rounded-md outline-none p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+                  formErrors.description ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Detailed description of the issue including any error messages or steps to reproduce"
+              />
+              {formErrors.description && (
+                <p className="mt-1 text-sm text-red-600">{formErrors.description}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                   Category
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <TagIcon className="h-5 w-5 text-gray-400" />
+                    <Tag className="h-5 w-5 text-gray-400" />
                   </div>
                   <select
                     id="category"
-                    className={`pl-10 mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200 ${
-                      errors.category ? 'border-red-300' : ''
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className={`pl-10 block w-full py-2 text-gray-700 bg-white border rounded-md outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      formErrors.category ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    {...register('category', {
-                      required: 'Category is required',
-                    })}
                   >
                     <option value="">Select a category</option>
                     <option value="HARDWARE">Hardware</option>
@@ -174,66 +213,78 @@ const CreateTicket: React.FC = () => {
                     <option value="ACCESS">Access</option>
                     <option value="OTHER">Other</option>
                   </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                    </svg>
+                  </div>
                 </div>
-                {errors.category && (
-                  <p className="mt-2 text-sm text-red-600">{errors.category.message}</p>
+                {formErrors.category && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.category}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
                   Priority
                 </label>
-                <select
-                  id="priority"
-                  className={`mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200 ${
-                    errors.priority ? 'border-red-300' : ''
-                  }`}
-                  {...register('priority', {
-                    required: 'Priority is required',
-                  })}
-                >
-                  <option value="">Select a priority</option>
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                </select>
-                {errors.priority && (
-                  <p className="mt-2 text-sm text-red-600">{errors.priority.message}</p>
+                <div className="relative">
+                  <select
+                    id="priority"
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleChange}
+                    className={`block w-full py-2 px-3 text-gray-700 bg-white border rounded-md outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      formErrors.priority ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select a priority</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                    </svg>
+                  </div>
+                </div>
+                {formErrors.priority && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.priority}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="expectedCompletionDate" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="expectedCompletionDate" className="block text-sm font-medium text-gray-700 mb-1">
                   Expected Completion Date
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <CalendarClock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     type="datetime-local"
                     id="expectedCompletionDate"
+                    name="expectedCompletionDate"
                     min={`${minDate}T00:00`}
-                    className={`pl-10 mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all duration-200 ${
-                      errors.expectedCompletionDate ? 'border-red-300' : ''
+                    value={formData.expectedCompletionDate}
+                    onChange={handleChange}
+                    className={`pl-10 block w-full py-2 text-gray-700 bg-white border rounded-md outline-none cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      formErrors.expectedCompletionDate ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    {...register('expectedCompletionDate', {
-                      required: 'Expected completion date is required',
-                    })}
                   />
                 </div>
-                {errors.expectedCompletionDate && (
-                  <p className="mt-2 text-sm text-red-600">{errors.expectedCompletionDate.message}</p>
+                {formErrors.expectedCompletionDate && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.expectedCompletionDate}</p>
                 )}
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-4 mt-6 border-t border-gray-100">
               <Button
                 type="button"
                 variant="outline"
-                className="mr-3 hover:bg-gray-100 transition-colors duration-200"
+                className="mr-4 border-gray-300 hover:bg-gray-50 hover:text-gray-700"
                 onClick={() => navigate('/tickets')}
               >
                 Cancel
@@ -242,9 +293,14 @@ const CreateTicket: React.FC = () => {
                 type="submit"
                 variant="primary"
                 isLoading={isLoading}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                className="bg-blue-600 hover:bg-blue-700"
               >
-                Create Ticket
+                <span className="flex items-center">
+                  Create Ticket
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </span>
               </Button>
             </div>
           </form>

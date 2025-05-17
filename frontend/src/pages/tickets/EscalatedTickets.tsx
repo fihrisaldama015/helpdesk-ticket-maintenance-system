@@ -2,7 +2,6 @@ import { AlertTriangle, Filter, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
@@ -27,23 +26,7 @@ const EscalatedTickets: React.FC = () => {
     getEscalatedTickets();
   }, [getEscalatedTickets]);
 
-  // Category filter handler
-  const handleCategoryFilterChange = (category: TicketCategory) => {
-    if (categoryFilter.includes(category)) {
-      setCategoryFilter(categoryFilter.filter(c => c !== category));
-    } else {
-      setCategoryFilter([...categoryFilter, category]);
-    }
-  };
-
-
-  const handleCriticalValueFilterChange = (criticalValue: CriticalValue) => {
-    if (criticalValueFilter.includes(criticalValue)) {
-      setCriticalValueFilter(criticalValueFilter.filter(cv => cv !== criticalValue));
-    } else {
-      setCriticalValueFilter([...criticalValueFilter, criticalValue]);
-    }
-  };
+  // Category filter handler is no longer needed as we're using select dropdowns now
 
   const applyFilters = () => {
     const newFilters: TicketFilter = {
@@ -78,202 +61,210 @@ const EscalatedTickets: React.FC = () => {
 
   return (
     <Layout requireAuth allowedRoles={['L2_SUPPORT', 'L3_SUPPORT']}>
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+      <div className="bg-gradient-to-br from-white to-blue-50 shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl">
+        <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-white via-blue-50 to-white flex justify-between items-center">
           <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-xl leading-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
               Escalated Tickets
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm font-medium text-gray-600">
               {user?.role === 'L2_SUPPORT' ? 'Tickets escalated to L2 support' : 'Critical tickets (C1/C2) escalated to L3 support'}
             </p>
           </div>
           <div>
             <button
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
               onClick={() => setShowFilters(!showFilters)}
             >
-              <Filter size={16} className="mr-2" />
+              <Filter size={16} className={`mr-2 transition-transform duration-300 ${showFilters ? 'rotate-180' : 'rotate-0'}`} />
               {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
           </div>
         </div>
 
-        {showFilters && (
-          <div className="p-6 bg-gray-50 border-b border-gray-200 animate-fadeIn">
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${showFilters ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}
+        >
+          <div className="p-6 bg-gradient-to-b from-blue-50 to-white border-b border-gray-200 transform transition-all duration-500">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {/* Category Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
+              {/* Critical Value Filter */}
+              <div className="transform transition-all duration-500 hover:shadow-md p-4 rounded-lg hover:bg-white">
+                <label className="block text-sm font-semibold text-blue-700 mb-3">
+                  Critical Value
                 </label>
                 <div className="space-y-2">
-                  {['HARDWARE', 'SOFTWARE', 'NETWORK', 'ACCESS', 'OTHER'].map((cat) => (
-                    <div className="flex items-center" key={cat}>
+                  {['C1', 'C2', 'C3'].map((critValue, index) => (
+                    <div key={index} className="flex items-center group">
                       <input
-                        id={`category-${cat}`}
+                        id={`critical-${critValue}`}
                         type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        checked={categoryFilter.includes(cat as TicketCategory)}
-                        onChange={() => handleCategoryFilterChange(cat as TicketCategory)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors duration-200 cursor-pointer"
+                        checked={criticalValueFilter.includes(critValue as CriticalValue)}
+                        onChange={() => {
+                          if (criticalValueFilter.includes(critValue as CriticalValue)) {
+                            setCriticalValueFilter(criticalValueFilter.filter(cv => cv !== critValue as CriticalValue));
+                          } else {
+                            setCriticalValueFilter([...criticalValueFilter, critValue as CriticalValue]);
+                          }
+                        }}
                       />
-                      <label htmlFor={`category-${cat}`} className="ml-2 block text-sm text-gray-700">
-                        {cat.charAt(0) + cat.slice(1).toLowerCase()}
+                      <label htmlFor={`critical-${critValue}`} className="ml-2 block text-sm text-gray-700 group-hover:text-blue-700 transition-colors duration-200 cursor-pointer">
+                        {critValue}
                       </label>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Critical Value
+              {/* Category Filter */}
+              <div className="transform transition-all duration-500 hover:shadow-md p-4 rounded-lg hover:bg-white">
+                <label className="block text-sm font-semibold text-blue-700 mb-3">
+                  Category
                 </label>
                 <div className="space-y-2">
-                  <div className="flex items-center">
-                    <input
-                      id="critical-C1"
-                      type="checkbox"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      checked={criticalValueFilter.includes('C1')}
-                      onChange={() => handleCriticalValueFilterChange('C1')}
-                    />
-                    <label htmlFor="critical-C1" className="ml-2 block text-sm text-gray-700">
-                      C1 (Critical)
-                    </label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      id="critical-C2"
-                      type="checkbox"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      checked={criticalValueFilter.includes('C2')}
-                      onChange={() => handleCriticalValueFilterChange('C2')}
-                    />
-                    <label htmlFor="critical-C2" className="ml-2 block text-sm text-gray-700">
-                      C2 (Major)
-                    </label>
-                  </div>
-                  {user?.role === 'L2_SUPPORT' && (
-                    <div className="flex items-center">
+                  {Object.values({
+                    HARDWARE: 'Hardware',
+                    SOFTWARE: 'Software',
+                    NETWORK: 'Network',
+                    SECURITY: 'Security',
+                    OTHER: 'Other',
+                  }).map((category, index) => (
+                    <div key={index} className="flex items-center group">
                       <input
-                        id="critical-C3"
+                        id={`category-${index}`}
                         type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        checked={criticalValueFilter.includes('C3')}
-                        onChange={() => handleCriticalValueFilterChange('C3')}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors duration-200 cursor-pointer"
+                        checked={categoryFilter.includes(Object.keys({
+                          HARDWARE: 'Hardware',
+                          SOFTWARE: 'Software',
+                          NETWORK: 'Network',
+                          SECURITY: 'Security',
+                          OTHER: 'Other',
+                        })[index] as TicketCategory)}
+                        onChange={() => {
+                          const cat = Object.keys({
+                            HARDWARE: 'Hardware',
+                            SOFTWARE: 'Software',
+                            NETWORK: 'Network',
+                            SECURITY: 'Security',
+                            OTHER: 'Other',
+                          })[index] as TicketCategory;
+                          
+                          if (categoryFilter.includes(cat)) {
+                            setCategoryFilter(categoryFilter.filter(c => c !== cat));
+                          } else {
+                            setCategoryFilter([...categoryFilter, cat]);
+                          }
+                        }}
                       />
-                      <label htmlFor="critical-C3" className="ml-2 block text-sm text-gray-700">
-                        C3 (Minor)
+                      <label htmlFor={`category-${index}`} className="ml-2 block text-sm text-gray-700 group-hover:text-blue-700 transition-colors duration-200 cursor-pointer">
+                        {category}
                       </label>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+              {/* Search Filter */}
+              <div className="transform transition-all duration-500 hover:shadow-md p-4 rounded-lg hover:bg-white">
+                <label className="block text-sm font-semibold text-blue-700 mb-3">
                   Search
                 </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                    <Search size={16} className="text-blue-400" />
                   </div>
                   <input
                     type="text"
-                    name="search"
-                    id="search"
-                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md transition-all duration-200"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200"
                     placeholder="Search escalated tickets..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
 
-                <div className="mt-4 flex space-x-3">
-                  <Button
-                    variant="primary"
-                    size="sm"
+                <div className="mt-4 flex space-x-2">
+                  <button
+                    className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform hover:scale-105 transition-transform duration-200 hover:shadow-md"
                     onClick={applyFilters}
-                    className="bg-blue-600 hover:bg-blue-700 transition-colors"
                   >
                     Apply Filters
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transform hover:scale-105 transition-transform duration-200 hover:shadow-md"
                     onClick={resetFilters}
-                    className="hover:bg-gray-100 transition-colors"
                   >
                     Reset
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        )}
+
+
+        </div>
 
         <div className="px-6 py-5">
           {isLoading ? (
             <div className="py-10 flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 shadow-md"></div>
             </div>
           ) : tickets.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl shadow-md">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gradient-to-r from-blue-50 to-white">
                   <tr>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       ID
                     </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       Title
                     </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       Status
                     </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       Critical Value
                     </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       Category
                     </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
                       Created
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {tickets.map((ticket) => (
-                    <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <tr key={ticket.id} className="hover:bg-blue-50 transition-colors duration-150 ease-in-out">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
                         {ticket.id.substring(0, 8)}...
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900 transition-colors">
+                        <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline">
                           {ticket.title}
                         </Link>
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
                         <StatusBadge status={ticket.status} />
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
                         {ticket.criticalValue ? (
                           <StatusBadge criticalValue={ticket.criticalValue} />
                         ) : (
-                          <span className="text-sm text-gray-500 italic">Not set</span>
+                          <span className="text-gray-400 text-sm italic">Not set</span>
                         )}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
                         <StatusBadge priority={ticket.priority} />
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
                         {ticket.category}
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
                         {new Date(ticket.createdAt).toLocaleDateString()}
                       </td>
                     </tr>
@@ -294,8 +285,9 @@ const EscalatedTickets: React.FC = () => {
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage <= 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors ${currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                        className={`relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${currentPage <= 1
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
                       >
                         <span className="sr-only">Previous</span>
                         ← Prev
@@ -303,8 +295,9 @@ const EscalatedTickets: React.FC = () => {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={tickets.length < itemsPerPage}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors ${tickets.length < itemsPerPage ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                        className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${tickets.length < itemsPerPage
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
                       >
                         <span className="sr-only">Next</span>
                         Next →
