@@ -1,12 +1,12 @@
+import { Filter, PlusCircle, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Filter, Search } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
-import { TicketStatus, TicketPriority, TicketCategory, TicketFilter } from '../../types';
+import { TicketCategory, TicketFilter, TicketPriority, TicketStatus } from '../../types';
 
 const TicketList: React.FC = () => {
   const { user } = useAuthStore();
@@ -25,7 +25,7 @@ const TicketList: React.FC = () => {
 
   useEffect(() => {
     // Initial load of tickets based on user role
-    if (user?.role === 'L1') {
+    if (user?.role === 'L1_AGENT') {
       getMyTickets();
     } else {
       getTickets();
@@ -68,7 +68,7 @@ const TicketList: React.FC = () => {
     
     setFilters(newFilters);
     
-    if (user?.role === 'L1') {
+    if (user?.role === 'L1_AGENT') {
       getMyTickets(newFilters);
     } else {
       getTickets(newFilters);
@@ -83,7 +83,7 @@ const TicketList: React.FC = () => {
     setCurrentPage(1);
     setFilters({});
     
-    if (user?.role === 'L1') {
+    if (user?.role === 'L1_AGENT') {
       getMyTickets({});
     } else {
       getTickets({});
@@ -97,7 +97,7 @@ const TicketList: React.FC = () => {
     const newFilters = { ...filters, page };
     setFilters(newFilters);
     
-    if (user?.role === 'L1') {
+    if (user?.role === 'L1_AGENT') {
       getMyTickets(newFilters);
     } else {
       getTickets(newFilters);
@@ -109,7 +109,7 @@ const TicketList: React.FC = () => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            {user?.role === 'L1' ? 'My Tickets' : 'All Tickets'}
+            {user?.role === 'L1_AGENT' ? 'My Tickets' : 'All Tickets'}
           </h3>
           <div className="flex space-x-3">
             <button
@@ -119,8 +119,7 @@ const TicketList: React.FC = () => {
               <Filter size={16} className="mr-2" />
               {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
-            
-            {user?.role === 'L1' && (
+            {user?.role === 'L1_AGENT' && (
               <Link to="/tickets/create">
                 <Button 
                   variant="primary" 
@@ -268,7 +267,7 @@ const TicketList: React.FC = () => {
                     <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Category
                     </th>
-                    {(user?.role === 'L2' || user?.role === 'L3') && (
+                    {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
                       <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Critical
                       </th>
@@ -288,7 +287,7 @@ const TicketList: React.FC = () => {
                         {ticket.id.substring(0, 8)}...
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <Link to={`/tickets/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900">
+                        <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900">
                           {ticket.title}
                         </Link>
                       </td>
@@ -301,7 +300,7 @@ const TicketList: React.FC = () => {
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {ticket.category}
                       </td>
-                      {(user?.role === 'L2' || user?.role === 'L3') && (
+                      {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
                         <td className="px-3 py-4 whitespace-nowrap">
                           {ticket.criticalValue ? (
                             <StatusBadge criticalValue={ticket.criticalValue} />
@@ -359,7 +358,7 @@ const TicketList: React.FC = () => {
           ) : (
             <div className="py-10 text-center">
               <p className="text-gray-500">No tickets found.</p>
-              {user?.role === 'L1' && (
+              {user?.role === 'L1_AGENT' && (
                 <div className="mt-4">
                   <Link to="/tickets/create">
                     <Button 

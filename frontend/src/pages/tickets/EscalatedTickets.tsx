@@ -1,17 +1,17 @@
+import { AlertTriangle, Filter, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Filter, Search, AlertTriangle } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
-import { CriticalValue, TicketStatus, TicketFilter } from '../../types';
+import { CriticalValue, TicketFilter, TicketStatus } from '../../types';
 
 const EscalatedTickets: React.FC = () => {
   const { user } = useAuthStore();
   const { tickets, isLoading, getEscalatedTickets, setFilters, filters } = useTicketStore();
-  
+
   // Filter states
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TicketStatus[]>([]);
@@ -51,7 +51,7 @@ const EscalatedTickets: React.FC = () => {
       page: currentPage,
       limit: itemsPerPage
     };
-    
+
     setFilters(newFilters);
     getEscalatedTickets(newFilters);
   };
@@ -75,7 +75,7 @@ const EscalatedTickets: React.FC = () => {
   };
 
   return (
-    <Layout requireAuth allowedRoles={['L2', 'L3']}>
+    <Layout requireAuth allowedRoles={['L2_SUPPORT', 'L3_SUPPORT']}>
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
           <div>
@@ -83,7 +83,7 @@ const EscalatedTickets: React.FC = () => {
               Escalated Tickets
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {user?.role === 'L2' ? 'Tickets escalated to L2 support' : 'Critical tickets (C1/C2) escalated to L3 support'}
+              {user?.role === 'L2_SUPPORT' ? 'Tickets escalated to L2 support' : 'Critical tickets (C1/C2) escalated to L3 support'}
             </p>
           </div>
           <div>
@@ -96,7 +96,7 @@ const EscalatedTickets: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         {showFilters && (
           <div className="p-6 bg-gray-50 border-b border-gray-200 animate-fadeIn">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -105,7 +105,7 @@ const EscalatedTickets: React.FC = () => {
                   Status
                 </label>
                 <div className="space-y-2">
-                  {user?.role === 'L2' ? (
+                  {user?.role === 'L2_SUPPORT' ? (
                     <div className="flex items-center">
                       <input
                         id="status-ESCALATED_L2"
@@ -132,7 +132,7 @@ const EscalatedTickets: React.FC = () => {
                       </label>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center">
                     <input
                       id="status-ATTENDING"
@@ -147,7 +147,7 @@ const EscalatedTickets: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Critical Value
@@ -177,7 +177,7 @@ const EscalatedTickets: React.FC = () => {
                       C2 (Major)
                     </label>
                   </div>
-                  {user?.role === 'L2' && (
+                  {user?.role === 'L2_SUPPORT' && (
                     <div className="flex items-center">
                       <input
                         id="critical-C3"
@@ -193,7 +193,7 @@ const EscalatedTickets: React.FC = () => {
                   )}
                 </div>
               </div>
-              
+
               <div>
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                   Search
@@ -212,7 +212,7 @@ const EscalatedTickets: React.FC = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                
+
                 <div className="mt-4 flex space-x-3">
                   <Button
                     variant="primary"
@@ -235,7 +235,7 @@ const EscalatedTickets: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <div className="px-6 py-5">
           {isLoading ? (
             <div className="py-10 flex justify-center">
@@ -297,19 +297,19 @@ const EscalatedTickets: React.FC = () => {
                         {new Date(ticket.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {ticket.actions.find(a => 
+                        {ticket.actions?.find(a =>
                           a.action.includes('Escalated to')
-                        )?.createdAt 
-                          ? new Date(ticket.actions.find(a => 
-                              a.action.includes('Escalated to')
-                            )!.createdAt).toLocaleDateString() 
+                        )?.createdAt
+                          ? new Date(ticket.actions?.find(a =>
+                            a.action.includes('Escalated to')
+                          )!.createdAt).toLocaleDateString()
                           : '-'}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              
+
               {/* Pagination */}
               <div className="py-3 flex items-center justify-between border-t border-gray-200 mt-4">
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
@@ -323,9 +323,8 @@ const EscalatedTickets: React.FC = () => {
                       <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage <= 1}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors ${
-                          currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors ${currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                       >
                         <span className="sr-only">Previous</span>
                         ← Prev
@@ -333,9 +332,8 @@ const EscalatedTickets: React.FC = () => {
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={tickets.length < itemsPerPage}
-                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors ${
-                          tickets.length < itemsPerPage ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                        className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors ${tickets.length < itemsPerPage ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                       >
                         <span className="sr-only">Next</span>
                         Next →
@@ -352,7 +350,7 @@ const EscalatedTickets: React.FC = () => {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No escalated tickets found</h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                {user?.role === 'L2' 
+                {user?.role === 'L2_SUPPORT'
                   ? "There are currently no tickets escalated to L2 support. Tickets will appear here when L1 agents escalate issues they can't resolve."
                   : "There are currently no critical tickets (C1/C2) escalated to L3 support. Tickets will appear here when L2 support escalates critical issues."}
               </p>

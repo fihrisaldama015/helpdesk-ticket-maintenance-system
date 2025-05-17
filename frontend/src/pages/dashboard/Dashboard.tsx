@@ -9,6 +9,7 @@ import useTicketStore from '../../store/ticketStore';
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const { tickets, getMyTickets, isLoading } = useTicketStore();
+  console.log('tickets = ', tickets)
 
   useEffect(() => {
     // Load user's tickets on component mount
@@ -19,10 +20,10 @@ const Dashboard: React.FC = () => {
   const statusCounts = {
     new: tickets.filter(ticket => ticket.status === 'NEW').length,
     attending: tickets.filter(ticket => ticket.status === 'ATTENDING').length,
-    escalated: tickets.filter(ticket => 
+    escalated: tickets.filter(ticket =>
       ticket.status === 'ESCALATED_L2' || ticket.status === 'ESCALATED_L3'
     ).length,
-    completed: tickets.filter(ticket => 
+    completed: tickets.filter(ticket =>
       ticket.status === 'COMPLETED' || ticket.status === 'RESOLVED'
     ).length,
   };
@@ -37,12 +38,12 @@ const Dashboard: React.FC = () => {
       <div className="bg-white shadow rounded-lg mb-6">
         <div className="px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Welcome, {user?.name}!
+            Welcome, {user?.firstName} {user?.lastName}!
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            {user?.role === 'L1' && 'Helpdesk Agent (L1)'}
-            {user?.role === 'L2' && 'Technical Support (L2)'}
-            {user?.role === 'L3' && 'Advanced Support (L3)'}
+            {user?.role === 'L1_AGENT' && 'Helpdesk Agent (L1)'}
+            {user?.role === 'L2_SUPPORT' && 'Technical Support (L2)'}
+            {user?.role === 'L3_SUPPORT' && 'Advanced Support (L3)'}
           </p>
         </div>
         <div className="px-6 py-5">
@@ -50,10 +51,10 @@ const Dashboard: React.FC = () => {
             <h4 className="text-md font-medium text-gray-700">
               Your dashboard
             </h4>
-            {user?.role === 'L1' && (
+            {user?.role === 'L1_AGENT' && (
               <Link to="/tickets/create">
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   size="sm"
                   leftIcon={<PlusCircle size={16} />}
                 >
@@ -62,7 +63,7 @@ const Dashboard: React.FC = () => {
               </Link>
             )}
           </div>
-          
+
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <div className="bg-blue-50 overflow-hidden shadow rounded-lg">
               <div className="p-5">
@@ -81,7 +82,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-yellow-50 overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
@@ -99,7 +100,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-red-50 overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
@@ -117,7 +118,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-green-50 overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <div className="flex items-center">
@@ -179,27 +180,25 @@ const Dashboard: React.FC = () => {
                         {ticket.id.substring(0, 8)}...
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <Link to={`/tickets/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900">
+                        <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900">
                           {ticket.title}
                         </Link>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 text-xs font-semibold rounded-full ${
-                          ticket.status === 'NEW' ? 'bg-blue-100 text-blue-800' :
-                          ticket.status === 'ATTENDING' ? 'bg-yellow-100 text-yellow-800' :
-                          ticket.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                          ticket.status === 'RESOLVED' ? 'bg-purple-100 text-purple-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <span className={`inline-flex px-2 text-xs font-semibold rounded-full ${ticket.status === 'NEW' ? 'bg-blue-100 text-blue-800' :
+                            ticket.status === 'ATTENDING' ? 'bg-yellow-100 text-yellow-800' :
+                              ticket.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                                ticket.status === 'RESOLVED' ? 'bg-purple-100 text-purple-800' :
+                                  'bg-red-100 text-red-800'
+                          }`}>
                           {ticket.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 text-xs font-semibold rounded-full ${
-                          ticket.priority === 'LOW' ? 'bg-gray-100 text-gray-800' :
-                          ticket.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <span className={`inline-flex px-2 text-xs font-semibold rounded-full ${ticket.priority === 'LOW' ? 'bg-gray-100 text-gray-800' :
+                            ticket.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                          }`}>
                           {ticket.priority}
                         </span>
                       </td>
@@ -216,7 +215,7 @@ const Dashboard: React.FC = () => {
               <p className="text-gray-500">No recent tickets found.</p>
             </div>
           )}
-          
+
           <div className="mt-4 text-center">
             <Link to="/tickets">
               <Button variant="outline" size="sm">

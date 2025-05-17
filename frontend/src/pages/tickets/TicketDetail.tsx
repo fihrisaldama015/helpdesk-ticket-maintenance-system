@@ -1,39 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Clock, 
-  Calendar, 
-  Tag, 
-  AlertCircle, 
-  ChevronRight, 
-  ChevronDown,
-  MessageCircle,
-  ArrowUpCircle
-} from 'lucide-react';
 import { format } from 'date-fns';
+import {
+  AlertCircle,
+  ArrowUpCircle,
+  Calendar,
+  ChevronDown,
+  Clock,
+  MessageCircle,
+  Tag
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
-import { CriticalValue, TicketStatus, UserRole } from '../../types';
+import { CriticalValue, TicketAction, TicketStatus } from '../../types';
 
 const TicketDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { 
-    currentTicket, 
-    getTicketById, 
-    updateTicketStatus, 
-    escalateToL2, 
-    setCriticalValue, 
-    escalateToL3, 
-    addTicketAction, 
+  const {
+    currentTicket,
+    getTicketById,
+    updateTicketStatus,
+    escalateToL2,
+    setCriticalValue,
+    escalateToL3,
+    addTicketAction,
     resolveTicket,
-    isLoading, 
-    error, 
-    clearError 
+    isLoading,
+    error,
+    clearError
   } = useTicketStore();
 
   const [showActions, setShowActions] = useState(false);
@@ -42,7 +41,7 @@ const TicketDetail: React.FC = () => {
   const [statusChange, setStatusChange] = useState<TicketStatus | ''>('');
   const [escalationNotes, setEscalationNotes] = useState('');
   const [showEscalationForm, setShowEscalationForm] = useState(false);
-  const [selectedCriticalValue, setSelectedCriticalValue] = useState<CriticalValue>(null);
+  const [selectedCriticalValue, setSelectedCriticalValue] = useState<CriticalValue>("NONE");
   const [showCriticalValueForm, setShowCriticalValueForm] = useState(false);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [showResolutionForm, setShowResolutionForm] = useState(false);
@@ -52,7 +51,7 @@ const TicketDetail: React.FC = () => {
     if (id) {
       getTicketById(id);
     }
-    
+
     return () => {
       clearError();
     };
@@ -157,39 +156,39 @@ const TicketDetail: React.FC = () => {
   // Helper to check if user can perform certain actions
   const canUpdateStatus = (): boolean => {
     if (!user) return false;
-    
+
     // L1 can only update to NEW, ATTENDING, COMPLETED
-    if (user.role === 'L1') {
+    if (user.role === 'L1_AGENT') {
       return currentTicket.status === 'NEW' || currentTicket.status === 'ATTENDING';
     }
-    
+
     // L2 and L3 can update any status
-    return user.role === 'L2' || user.role === 'L3';
+    return user.role === 'L2_SUPPORT' || user.role === 'L3_SUPPORT';
   };
 
   const canEscalateToL2 = (): boolean => {
-    return user?.role === 'L1' && 
+    return user?.role === 'L1_AGENT' &&
       (currentTicket.status === 'NEW' || currentTicket.status === 'ATTENDING');
   };
 
   const canSetCriticalValue = (): boolean => {
-    return user?.role === 'L2' && currentTicket.status === 'ESCALATED_L2';
+    return user?.role === 'L2_SUPPORT' && currentTicket.status === 'ESCALATED_L2';
   };
 
   const canEscalateToL3 = (): boolean => {
-    return user?.role === 'L2' && 
-      currentTicket.status === 'ESCALATED_L2' && 
+    return user?.role === 'L2_SUPPORT' &&
+      currentTicket.status === 'ESCALATED_L2' &&
       (currentTicket.criticalValue === 'C1' || currentTicket.criticalValue === 'C2');
   };
 
   const canAddAction = (): boolean => {
-    return (user?.role === 'L2' || user?.role === 'L3') && 
+    return (user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') &&
       (currentTicket.status === 'ESCALATED_L2' || currentTicket.status === 'ESCALATED_L3');
   };
 
   const canResolve = (): boolean => {
-    return user?.role === 'L3' && 
-      currentTicket.status === 'ESCALATED_L3' && 
+    return user?.role === 'L3_SUPPORT' &&
+      currentTicket.status === 'ESCALATED_L3' &&
       (currentTicket.criticalValue === 'C1' || currentTicket.criticalValue === 'C2');
   };
 
@@ -212,9 +211,9 @@ const TicketDetail: React.FC = () => {
               </div>
             </div>
             <div className="mt-4 sm:mt-0">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => navigate('/tickets')}
                 className="hover:bg-gray-100 transition-colors"
               >
@@ -229,7 +228,7 @@ const TicketDetail: React.FC = () => {
           <div>
             <div className="border rounded-md p-4 bg-gray-50">
               <h4 className="font-medium text-gray-700 mb-3">Ticket Details</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-start">
                   <Tag className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
@@ -238,7 +237,7 @@ const TicketDetail: React.FC = () => {
                     <span className="block text-sm text-gray-900">{currentTicket.category}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <AlertCircle className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                   <div>
@@ -246,7 +245,7 @@ const TicketDetail: React.FC = () => {
                     <span className="block text-sm text-gray-900">{currentTicket.priority}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <Calendar className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                   <div>
@@ -256,7 +255,7 @@ const TicketDetail: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <Clock className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                   <div>
@@ -269,30 +268,34 @@ const TicketDetail: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <div className="border rounded-md p-4 bg-gray-50">
               <h4 className="font-medium text-gray-700 mb-3">Created By</h4>
               <div className="flex items-center mb-4">
                 <div className="bg-blue-100 rounded-full h-10 w-10 flex items-center justify-center text-blue-600 font-medium">
-                  {currentTicket.createdByName.charAt(0).toUpperCase()}
+                  {currentTicket.createdBy?.firstName.charAt(0).toUpperCase()}
                 </div>
                 <div className="ml-3">
-                  <div className="text-sm font-medium text-gray-900">{currentTicket.createdByName}</div>
-                  <div className="text-sm text-gray-500">ID: {currentTicket.createdBy.substring(0, 8)}...</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {currentTicket.createdBy?.firstName} {currentTicket.createdBy?.lastName}
+                  </div>
+                  <div className="text-sm text-gray-500">ID: {currentTicket.createdBy?.id.substring(0, 8)}...</div>
                 </div>
               </div>
-              
-              {currentTicket.assignedToName && (
+
+              {currentTicket.assignedTo && (
                 <>
                   <h4 className="font-medium text-gray-700 mb-3">Assigned To</h4>
                   <div className="flex items-center">
                     <div className="bg-green-100 rounded-full h-10 w-10 flex items-center justify-center text-green-600 font-medium">
-                      {currentTicket.assignedToName.charAt(0).toUpperCase()}
+                      {currentTicket.assignedTo?.firstName.charAt(0).toUpperCase()}
                     </div>
                     <div className="ml-3">
-                      <div className="text-sm font-medium text-gray-900">{currentTicket.assignedToName}</div>
-                      <div className="text-sm text-gray-500">ID: {currentTicket.assignedTo?.substring(0, 8)}...</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {currentTicket.assignedTo?.firstName} {currentTicket.assignedTo?.lastName}
+                      </div>
+                      <div className="text-sm text-gray-500">ID: {currentTicket.assignedTo?.id.substring(0, 8)}...</div>
                     </div>
                   </div>
                 </>
@@ -321,124 +324,117 @@ const TicketDetail: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        {(canUpdateStatus() || canEscalateToL2() || canSetCriticalValue() || 
+        {(canUpdateStatus() || canEscalateToL2() || canSetCriticalValue() ||
           canEscalateToL3() || canAddAction() || canResolve()) && (
-          <div className="px-6 py-5 border-t border-gray-200 flex flex-wrap gap-3">
-            {canUpdateStatus() && (
-              <div className="dropdown relative">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  rightIcon={<ChevronDown size={16} />}
-                  onClick={() => setShowActions(!showActions)}
-                  className="hover:bg-gray-100 transition-colors"
-                >
-                  Actions
-                </Button>
-                {showActions && (
-                  <div className="dropdown-content absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 transition-opacity duration-200 ease-in-out animate-fadeIn">
-                    <div className="py-1" role="menu" aria-orientation="vertical">
-                      {user?.role === 'L1' && (
-                        <>
-                          <button
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                            onClick={() => handleStatusUpdate('NEW')}
-                            disabled={currentTicket.status === 'NEW'}
-                          >
-                            Mark as New
-                          </button>
-                          <button
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                            onClick={() => handleStatusUpdate('ATTENDING')}
-                            disabled={currentTicket.status === 'ATTENDING'}
-                          >
-                            Mark as Attending
-                          </button>
-                          <button
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                            onClick={() => handleStatusUpdate('COMPLETED')}
-                            disabled={currentTicket.status === 'COMPLETED'}
-                          >
-                            Mark as Completed
-                          </button>
-                        </>
-                      )}
-                      
-                      {(user?.role === 'L2' || user?.role === 'L3') && (
-                        <>
-                          <button
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                            onClick={() => setShowActions(false)}
-                          >
-                            Update Status (via Action)
-                          </button>
-                        </>
-                      )}
+            <div className="px-6 py-5 border-t border-gray-200 flex flex-wrap gap-3">
+              {canUpdateStatus() && (
+                <div className="dropdown relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    rightIcon={<ChevronDown size={16} />}
+                    onClick={() => setShowActions(!showActions)}
+                    className="hover:bg-gray-100 transition-colors"
+                  >
+                    Status
+                  </Button>
+                  {showActions && (
+                    <div className="dropdown-content absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 transition-opacity duration-200 ease-in-out animate-fadeIn">
+                      <div className="py-1" role="menu" aria-orientation="vertical">
+                        {user?.role === 'L1_AGENT' && (
+                          <>
+                            <button
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              onClick={() => handleStatusUpdate('ATTENDING')}
+                              disabled={currentTicket.status === 'ATTENDING'}
+                            >
+                              Mark as Attending (Fixing this)
+                            </button>
+                            <button
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              onClick={() => handleStatusUpdate('COMPLETED')}
+                              disabled={currentTicket.status === 'COMPLETED'}
+                            >
+                              Mark as Completed
+                            </button>
+                          </>
+                        )}
+
+                        {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
+                          <>
+                            <button
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              onClick={() => setShowActions(false)}
+                            >
+                              Update Status (via Action)
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
-            {canEscalateToL2() && (
-              <Button 
-                variant="warning" 
-                size="sm"
-                leftIcon={<ArrowUpCircle size={16} />}
-                onClick={() => setShowEscalationForm(!showEscalationForm)}
-                className="bg-orange-500 hover:bg-orange-600 transition-colors"
-              >
-                Escalate to L2
-              </Button>
-            )}
+              {canEscalateToL2() && (
+                <Button
+                  variant="warning"
+                  size="sm"
+                  leftIcon={<ArrowUpCircle size={16} />}
+                  onClick={() => setShowEscalationForm(!showEscalationForm)}
+                  className="bg-orange-500 hover:bg-orange-600 transition-colors"
+                >
+                  Escalate to L2
+                </Button>
+              )}
 
-            {canSetCriticalValue() && (
-              <Button 
-                variant="secondary" 
-                size="sm"
-                onClick={() => setShowCriticalValueForm(!showCriticalValueForm)}
-                className="bg-indigo-600 hover:bg-indigo-700 transition-colors"
-              >
-                Set Critical Value
-              </Button>
-            )}
+              {canSetCriticalValue() && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowCriticalValueForm(!showCriticalValueForm)}
+                  className="bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                >
+                  Set Critical Value
+                </Button>
+              )}
 
-            {canEscalateToL3() && (
-              <Button 
-                variant="danger" 
-                size="sm"
-                leftIcon={<ArrowUpCircle size={16} />}
-                onClick={() => setShowEscalationForm(!showEscalationForm)}
-                className="bg-red-600 hover:bg-red-700 transition-colors"
-              >
-                Escalate to L3
-              </Button>
-            )}
+              {canEscalateToL3() && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  leftIcon={<ArrowUpCircle size={16} />}
+                  onClick={() => setShowEscalationForm(!showEscalationForm)}
+                  className="bg-red-600 hover:bg-red-700 transition-colors"
+                >
+                  Escalate to L3
+                </Button>
+              )}
 
-            {canAddAction() && (
-              <Button 
-                variant="primary" 
-                size="sm"
-                leftIcon={<MessageCircle size={16} />}
-                onClick={() => setShowActions(!showActions)}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors"
-              >
-                Add Action
-              </Button>
-            )}
+              {canAddAction() && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<MessageCircle size={16} />}
+                  onClick={() => setShowActions(!showActions)}
+                  className="bg-blue-600 hover:bg-blue-700 transition-colors"
+                >
+                  Add Action
+                </Button>
+              )}
 
-            {canResolve() && (
-              <Button 
-                variant="success" 
-                size="sm"
-                onClick={() => setShowResolutionForm(!showResolutionForm)}
-                className="bg-emerald-600 hover:bg-emerald-700 transition-colors"
-              >
-                Resolve Ticket
-              </Button>
-            )}
-          </div>
-        )}
+              {canResolve() && (
+                <Button
+                  variant="success"
+                  size="sm"
+                  onClick={() => setShowResolutionForm(!showResolutionForm)}
+                  className="bg-emerald-600 hover:bg-emerald-700 transition-colors"
+                >
+                  Resolve Ticket
+                </Button>
+              )}
+            </div>
+          )}
 
         {/* Escalation Form (L1->L2 or L2->L3) */}
         {showEscalationForm && (
@@ -575,7 +571,7 @@ const TicketDetail: React.FC = () => {
             <form onSubmit={handleAddAction}>
               <div className="mb-4">
                 <label htmlFor="actionType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Action Type
+                  Action
                 </label>
                 <input
                   id="actionType"
@@ -587,10 +583,10 @@ const TicketDetail: React.FC = () => {
                   required
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="actionNotes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Action Notes
+                  Description
                 </label>
                 <textarea
                   id="actionNotes"
@@ -602,7 +598,7 @@ const TicketDetail: React.FC = () => {
                   required
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="statusChange" className="block text-sm font-medium text-gray-700 mb-1">
                   Status Change (Optional)
@@ -695,14 +691,14 @@ const TicketDetail: React.FC = () => {
             <h4 className="font-medium text-gray-700">Ticket History</h4>
             <div className="flex-grow border-t border-gray-200 ml-4"></div>
           </div>
-          
+
           {currentTicket.actions && currentTicket.actions.length > 0 ? (
             <div className="flow-root">
               <ul className="-mb-8">
-                {currentTicket.actions.map((action, actionIdx) => (
+                {currentTicket.actions?.map((action: TicketAction, actionIdx: number) => (
                   <li key={action.id}>
                     <div className="relative pb-8">
-                      {actionIdx !== currentTicket.actions.length - 1 ? (
+                      {actionIdx !== currentTicket.actions?.length! - 1 ? (
                         <span
                           className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
                           aria-hidden="true"
@@ -712,15 +708,15 @@ const TicketDetail: React.FC = () => {
                         <div className="relative">
                           <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center ring-8 ring-white">
                             <span className="text-sm font-medium text-gray-700">
-                              {action.userName.charAt(0).toUpperCase()}
+                              {action.user?.firstName.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div>
                             <div className="text-sm">
-                              <span className="font-medium text-gray-900">{action.userName}</span>
-                              <span className="ml-2 text-gray-500">({action.userRole})</span>
+                              <span className="font-medium text-gray-900">{action.user?.firstName} {action.user?.lastName}</span>
+                              <span className="ml-2 text-gray-500">({action.user?.role})</span>
                             </div>
                             <p className="mt-0.5 text-sm text-gray-500">
                               {format(new Date(action.createdAt), 'PPp')}
@@ -729,9 +725,9 @@ const TicketDetail: React.FC = () => {
                           <div className="mt-2 bg-gray-50 rounded-md p-3">
                             <div className="text-sm font-medium text-gray-900 mb-1">
                               {action.action}
-                              {action.statusChange && (
+                              {action.newStatus && (
                                 <span className="ml-2">
-                                  <StatusBadge status={action.statusChange} />
+                                  <StatusBadge status={action.newStatus} />
                                 </span>
                               )}
                             </div>

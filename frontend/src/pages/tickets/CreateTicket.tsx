@@ -56,7 +56,7 @@ const CreateTicket: React.FC = () => {
   const minDate = today.toISOString().split('T')[0];
 
   return (
-    <Layout requireAuth allowedRoles={['L1']}>
+    <Layout requireAuth allowedRoles={['L1_AGENT']}>
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
