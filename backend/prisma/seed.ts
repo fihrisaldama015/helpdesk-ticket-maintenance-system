@@ -101,15 +101,6 @@ async function main() {
       expectedCompletionDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
       createdBy: { connect: { id: agent!.id } },
       assignedTo: { connect: { id: agent!.id } },
-      actions: {
-        create: [
-          {
-            action: 'Ticket Created',
-            notes: 'Initial ticket creation.',
-            user: { connect: { id: agent!.id } },
-          },
-        ],
-      },
     },
   });
   console.log('Created ticket for L1 Agent');
@@ -129,16 +120,10 @@ async function main() {
       actions: {
         create: [
           {
-            action: 'Ticket Created',
-            notes: 'Reported by L1 agent.',
-            user: { connect: { id: agent!.id } },
-            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          },
-          {
             action: 'Escalated to L2',
             notes: 'Escalating due to network-wide impact.',
             user: { connect: { id: agent!.id } },
-            createdAt: new Date(Date.now() - 1 * 12 * 60 * 60 * 1000),
+            createdAt: new Date(Date.now() - 1 * 4 * 60 * 60 * 1000),
           },
           {
             action: 'L2 Investigation Started',
@@ -166,22 +151,16 @@ async function main() {
       actions: {
         create: [
           {
-            action: 'Ticket Created',
-            notes: 'Reported by L1 agent.',
-            user: { connect: { id: agent!.id } },
-            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          },
-          {
             action: 'Escalated to L2',
             notes: 'Requires advanced support.',
             user: { connect: { id: tech!.id } },
-            createdAt: new Date(Date.now() - 1 * 16 * 60 * 60 * 1000),
+            createdAt: new Date(Date.now() - 1 * 8 * 60 * 60 * 1000),
           },
           {
             action: 'Escalated to L3',
             notes: 'Critical issue, needs admin attention.',
             user: { connect: { id: tech!.id } },
-            createdAt: new Date(Date.now() - 1 * 12 * 60 * 60 * 1000),
+            createdAt: new Date(Date.now() - 1 * 4 * 60 * 60 * 1000),
           },
           {
             action: 'L3 Analysis',
