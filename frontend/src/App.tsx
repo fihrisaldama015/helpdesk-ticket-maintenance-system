@@ -47,7 +47,7 @@ function App() {
           element={isAuthenticated ? <CreateTicket /> : <Navigate to="/login" replace />} 
         />
         <Route 
-          path="/tickets/:id" 
+          path="/tickets/detail/:id" 
           element={isAuthenticated ? <TicketDetail /> : <Navigate to="/login" replace />} 
         />
         <Route 
