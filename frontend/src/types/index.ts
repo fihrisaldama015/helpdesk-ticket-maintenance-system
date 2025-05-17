@@ -1,15 +1,16 @@
 // User Types
-export type UserRole = 'L1' | 'L2' | 'L3';
+export type UserRole = 'L1_AGENT' | 'L2_SUPPORT' | 'L3_SUPPORT';
 
 export interface User {
   id: string;
-  name: string;
   email: string;
+  firstName: string;
+  lastName: string;
   role: UserRole;
 }
 
 // Ticket Types
-export type TicketStatus = 
+export type TicketStatus =
   | 'NEW'
   | 'ATTENDING'
   | 'COMPLETED'
@@ -21,18 +22,18 @@ export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export type TicketCategory = 'HARDWARE' | 'SOFTWARE' | 'NETWORK' | 'ACCESS' | 'OTHER';
 
-export type CriticalValue = 'C1' | 'C2' | 'C3' | null;
+export type CriticalValue = 'NONE' | 'C1' | 'C2' | 'C3';
 
 export interface TicketAction {
   id: string;
   ticketId: string;
+  ticket?: Ticket;
   userId: string;
-  userName: string;
-  userRole: UserRole;
+  user?: User;
   action: string;
   notes: string;
+  newStatus?: TicketStatus;
   createdAt: string;
-  statusChange?: TicketStatus;
 }
 
 export interface Ticket {
@@ -42,17 +43,15 @@ export interface Ticket {
   category: TicketCategory;
   priority: TicketPriority;
   status: TicketStatus;
+  criticalValue: CriticalValue;
   expectedCompletionDate: string;
-  createdBy: string;
-  createdByName: string;
+  createdById: string;
+  createdBy?: User;
+  assignedToId: string;
+  assignedTo?: User;
   createdAt: string;
   updatedAt: string;
-  assignedTo?: string;
-  assignedToName?: string;
-  criticalValue?: CriticalValue;
-  actions: TicketAction[];
-  escalationNotes?: string;
-  resolutionNotes?: string;
+  actions?: TicketAction[];
 }
 
 // API Response Types
