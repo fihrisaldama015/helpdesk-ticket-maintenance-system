@@ -1,11 +1,11 @@
 import { create } from 'zustand';
+import ticketRepository from '../api/ticketRepository';
 import type {
+  CriticalValue,
   Ticket,
   TicketFilter,
-  TicketStatus,
-  CriticalValue
+  TicketStatus
 } from '../types';
-import ticketRepository from '../api/ticketRepository';
 
 interface TicketState {
   tickets: Ticket[];
@@ -16,7 +16,7 @@ interface TicketState {
   totalTickets: number;
   currentPage: number;
   limit: number;
-  
+
   // Actions
   getTickets: (filters?: TicketFilter) => Promise<void>;
   getMyTickets: (filters?: TicketFilter) => Promise<void>;
@@ -53,29 +53,21 @@ const useTicketStore = create<TicketState>((set, get) => ({
   getTickets: async (filters?: TicketFilter) => {
     set({ isLoading: true, error: null });
     const appliedFilters = filters || get().filters;
-    
+
     try {
       const response = await ticketRepository.getTickets(appliedFilters);
-      
-      if (response.success && response.data) {
-        set({ 
-          tickets: response.data.tickets,
-          totalTickets: response.data.total,
-          currentPage: response.data.page,
-          limit: response.data.limit,
-          isLoading: false,
-          filters: appliedFilters
-        });
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to fetch tickets' 
-        });
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while fetching tickets' 
+      set({
+        tickets: response.tickets,
+        totalTickets: response.total,
+        currentPage: response.page,
+        limit: response.limit,
+        isLoading: false,
+        filters: appliedFilters
+      });
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while fetching your tickets'
       });
     }
   },
@@ -83,29 +75,21 @@ const useTicketStore = create<TicketState>((set, get) => ({
   getMyTickets: async (filters?: TicketFilter) => {
     set({ isLoading: true, error: null });
     const appliedFilters = filters || get().filters;
-    
+
     try {
       const response = await ticketRepository.getMyTickets(appliedFilters);
-      
-      if (response.success && response.data) {
-        set({ 
-          tickets: response.data.tickets,
-          totalTickets: response.data.total,
-          currentPage: response.data.page,
-          limit: response.data.limit,
-          isLoading: false,
-          filters: appliedFilters
-        });
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to fetch your tickets' 
-        });
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while fetching your tickets' 
+      set({
+        tickets: response.tickets,
+        totalTickets: response.total,
+        currentPage: response.page,
+        limit: response.limit,
+        isLoading: false,
+        filters: appliedFilters
+      });
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while fetching your tickets'
       });
     }
   },
@@ -113,54 +97,40 @@ const useTicketStore = create<TicketState>((set, get) => ({
   getEscalatedTickets: async (filters?: TicketFilter) => {
     set({ isLoading: true, error: null });
     const appliedFilters = filters || get().filters;
-    
+
     try {
       const response = await ticketRepository.getEscalatedTickets(appliedFilters);
-      
-      if (response.success && response.data) {
-        set({ 
-          tickets: response.data.tickets,
-          totalTickets: response.data.total,
-          currentPage: response.data.page,
-          limit: response.data.limit,
-          isLoading: false,
-          filters: appliedFilters
-        });
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to fetch escalated tickets' 
-        });
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while fetching escalated tickets' 
+
+      set({
+        tickets: response.tickets,
+        totalTickets: response.total,
+        currentPage: response.page,
+        limit: response.limit,
+        isLoading: false,
+        filters: appliedFilters
+      });
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while fetching escalated tickets'
       });
     }
   },
 
   getTicketById: async (id: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.getTicketById(id);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to fetch ticket details' 
-        });
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while fetching ticket details' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while fetching ticket details'
       });
     }
   },
@@ -173,7 +143,7 @@ const useTicketStore = create<TicketState>((set, get) => ({
     expectedCompletionDate: string
   ) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.createTicket(
         title,
@@ -182,24 +152,16 @@ const useTicketStore = create<TicketState>((set, get) => ({
         priority,
         expectedCompletionDate
       );
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to create ticket' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while creating the ticket' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while creating the ticket'
       });
       return false;
     }
@@ -207,27 +169,19 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
   updateTicketStatus: async (id: string, status: TicketStatus) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.updateTicketStatus(id, status);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to update ticket status' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while updating ticket status' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while updating ticket status'
       });
       return false;
     }
@@ -235,27 +189,19 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
   escalateToL2: async (id: string, escalationNotes: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.escalateToL2(id, escalationNotes);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to escalate ticket to L2' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while escalating the ticket' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while escalating the ticket'
       });
       return false;
     }
@@ -263,27 +209,19 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
   setCriticalValue: async (id: string, criticalValue: CriticalValue) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.setCriticalValue(id, criticalValue);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to set critical value' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while setting critical value' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while setting critical value'
       });
       return false;
     }
@@ -291,27 +229,19 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
   escalateToL3: async (id: string, escalationNotes: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.escalateToL3(id, escalationNotes);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to escalate ticket to L3' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while escalating the ticket to L3' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while escalating the ticket to L3'
       });
       return false;
     }
@@ -319,27 +249,19 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
   addTicketAction: async (id: string, action: string, notes: string, statusChange?: TicketStatus) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.addTicketAction(id, action, notes, statusChange);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to add ticket action' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while adding ticket action' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while adding ticket action'
       });
       return false;
     }
@@ -347,27 +269,19 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
   resolveTicket: async (id: string, resolutionNotes: string) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const response = await ticketRepository.resolveTicket(id, resolutionNotes);
-      
-      if (response.success && response.data) {
-        set({ 
-          currentTicket: response.data,
-          isLoading: false
-        });
-        return true;
-      } else {
-        set({ 
-          isLoading: false, 
-          error: response.error || 'Failed to resolve ticket' 
-        });
-        return false;
-      }
-    } catch (error) {
-      set({ 
-        isLoading: false, 
-        error: 'An unexpected error occurred while resolving the ticket' 
+
+      set({
+        currentTicket: response,
+        isLoading: false
+      });
+      return true;
+    } catch (error: any) {
+      set({
+        isLoading: false,
+        error: error.message || 'An unexpected error occurred while resolving the ticket'
       });
       return false;
     }

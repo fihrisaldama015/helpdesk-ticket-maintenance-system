@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { User } from '../types';
 import authRepository from '../api/authRepository';
+import type { User } from '../types';
 
 interface AuthState {
   user: User | null;
@@ -14,7 +14,7 @@ interface AuthState {
   clearError: () => void;
 }
 
-const useAuthStore = create<AuthState>((set, get) => ({
+const useAuthStore = create<AuthState>((set, _) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
