@@ -8,13 +8,13 @@ import useTicketStore from '../../store/ticketStore';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
-  const { tickets, getMyTickets, isLoading } = useTicketStore();
-  console.log('tickets = ', tickets)
+  const { tickets, getMyTickets, isLoading, setFilters } = useTicketStore();
 
   useEffect(() => {
-    // Load user's tickets on component mount
+    // Reset filters and load user's tickets on component mount
+    setFilters({});
     getMyTickets();
-  }, [getMyTickets]);
+  }, [getMyTickets, setFilters]);
 
   // Count tickets by status
   const statusCounts = {
@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Recent Tickets
+            My Working Tickets
           </h3>
         </div>
         <div className="px-6 py-5">
@@ -217,11 +217,19 @@ const Dashboard: React.FC = () => {
           )}
 
           <div className="mt-4 text-center">
-            <Link to="/tickets">
-              <Button variant="outline" size="sm">
-                View all tickets
-              </Button>
-            </Link>
+            {user?.role === 'L1_AGENT'? (
+              <Link to="/tickets">
+                <Button variant="outline" size="sm">
+                  View all tickets
+                </Button>
+              </Link>
+            ):(
+              <Link to="/escalated">
+                <Button variant="outline" size="sm">
+                  View escalated tickets
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

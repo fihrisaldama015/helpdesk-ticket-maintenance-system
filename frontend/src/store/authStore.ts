@@ -17,7 +17,7 @@ interface AuthState {
 const useAuthStore = create<AuthState>((set, _) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true,
   error: null,
 
   login: async (email: string, password: string) => {
@@ -70,16 +70,20 @@ const useAuthStore = create<AuthState>((set, _) => ({
     authRepository.logout();
     set({
       user: null,
-      isAuthenticated: false
+      isAuthenticated: false,
+      isLoading: false
     });
   },
 
   loadUser: async () => {
+    console.log('[loadUser] loaded')
     const token = localStorage.getItem('token');
     if (!token) {
+      console.log('[loadUser] no token')
       set({
         user: null,
-        isAuthenticated: false
+        isAuthenticated: false,
+        isLoading: false
       });
       return false;
     }
@@ -88,7 +92,7 @@ const useAuthStore = create<AuthState>((set, _) => ({
 
     try {
       const response = await authRepository.getCurrentUser();
-
+      console.log('[loadUser] user', response)
       set({
         user: response,
         isAuthenticated: true,

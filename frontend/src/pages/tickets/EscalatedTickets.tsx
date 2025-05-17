@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
-import { CriticalValue, TicketFilter, TicketStatus } from '../../types';
+import { CriticalValue, TicketCategory, TicketFilter } from '../../types';
 
 const EscalatedTickets: React.FC = () => {
   const { user } = useAuthStore();
@@ -14,8 +14,8 @@ const EscalatedTickets: React.FC = () => {
 
   // Filter states
   const [showFilters, setShowFilters] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<TicketStatus[]>([]);
   const [criticalValueFilter, setCriticalValueFilter] = useState<CriticalValue[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<TicketCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Pagination
@@ -27,13 +27,15 @@ const EscalatedTickets: React.FC = () => {
     getEscalatedTickets();
   }, [getEscalatedTickets]);
 
-  const handleStatusFilterChange = (status: TicketStatus) => {
-    if (statusFilter.includes(status)) {
-      setStatusFilter(statusFilter.filter(s => s !== status));
+  // Category filter handler
+  const handleCategoryFilterChange = (category: TicketCategory) => {
+    if (categoryFilter.includes(category)) {
+      setCategoryFilter(categoryFilter.filter(c => c !== category));
     } else {
-      setStatusFilter([...statusFilter, status]);
+      setCategoryFilter([...categoryFilter, category]);
     }
   };
+
 
   const handleCriticalValueFilterChange = (criticalValue: CriticalValue) => {
     if (criticalValueFilter.includes(criticalValue)) {
@@ -45,8 +47,8 @@ const EscalatedTickets: React.FC = () => {
 
   const applyFilters = () => {
     const newFilters: TicketFilter = {
-      status: statusFilter.length > 0 ? statusFilter : undefined,
       criticalValue: criticalValueFilter.length > 0 ? criticalValueFilter : undefined,
+      category: categoryFilter.length > 0 ? categoryFilter : undefined,
       search: searchQuery || undefined,
       page: currentPage,
       limit: itemsPerPage
@@ -57,8 +59,8 @@ const EscalatedTickets: React.FC = () => {
   };
 
   const resetFilters = () => {
-    setStatusFilter([]);
     setCriticalValueFilter([]);
+    setCategoryFilter([]);
     setSearchQuery('');
     setCurrentPage(1);
     setFilters({});
@@ -100,51 +102,26 @@ const EscalatedTickets: React.FC = () => {
         {showFilters && (
           <div className="p-6 bg-gray-50 border-b border-gray-200 animate-fadeIn">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {/* Category Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
+                  Category
                 </label>
                 <div className="space-y-2">
-                  {user?.role === 'L2_SUPPORT' ? (
-                    <div className="flex items-center">
+                  {['HARDWARE', 'SOFTWARE', 'NETWORK', 'ACCESS', 'OTHER'].map((cat) => (
+                    <div className="flex items-center" key={cat}>
                       <input
-                        id="status-ESCALATED_L2"
+                        id={`category-${cat}`}
                         type="checkbox"
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        checked={statusFilter.includes('ESCALATED_L2')}
-                        onChange={() => handleStatusFilterChange('ESCALATED_L2')}
+                        checked={categoryFilter.includes(cat as TicketCategory)}
+                        onChange={() => handleCategoryFilterChange(cat as TicketCategory)}
                       />
-                      <label htmlFor="status-ESCALATED_L2" className="ml-2 block text-sm text-gray-700">
-                        Escalated to L2
+                      <label htmlFor={`category-${cat}`} className="ml-2 block text-sm text-gray-700">
+                        {cat.charAt(0) + cat.slice(1).toLowerCase()}
                       </label>
                     </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <input
-                        id="status-ESCALATED_L3"
-                        type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        checked={statusFilter.includes('ESCALATED_L3')}
-                        onChange={() => handleStatusFilterChange('ESCALATED_L3')}
-                      />
-                      <label htmlFor="status-ESCALATED_L3" className="ml-2 block text-sm text-gray-700">
-                        Escalated to L3
-                      </label>
-                    </div>
-                  )}
-
-                  <div className="flex items-center">
-                    <input
-                      id="status-ATTENDING"
-                      type="checkbox"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      checked={statusFilter.includes('ATTENDING')}
-                      onChange={() => handleStatusFilterChange('ATTENDING')}
-                    />
-                    <label htmlFor="status-ATTENDING" className="ml-2 block text-sm text-gray-700">
-                      Attending
-                    </label>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -259,13 +236,13 @@ const EscalatedTickets: React.FC = () => {
                       Critical Value
                     </th>
                     <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Category
                     </th>
                     <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created
-                    </th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Escalated
                     </th>
                   </tr>
                 </thead>
@@ -276,7 +253,7 @@ const EscalatedTickets: React.FC = () => {
                         {ticket.id.substring(0, 8)}...
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <Link to={`/tickets/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900 transition-colors">
+                        <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-900 transition-colors">
                           {ticket.title}
                         </Link>
                       </td>
@@ -291,19 +268,13 @@ const EscalatedTickets: React.FC = () => {
                         )}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <StatusBadge priority={ticket.priority} />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {ticket.category}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(ticket.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {ticket.actions?.find(a =>
-                          a.action.includes('Escalated to')
-                        )?.createdAt
-                          ? new Date(ticket.actions?.find(a =>
-                            a.action.includes('Escalated to')
-                          )!.createdAt).toLocaleDateString()
-                          : '-'}
                       </td>
                     </tr>
                   ))}

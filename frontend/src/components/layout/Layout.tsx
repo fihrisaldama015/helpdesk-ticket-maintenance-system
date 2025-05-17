@@ -18,15 +18,23 @@ const Layout: React.FC<LayoutProps> = ({
   const { isAuthenticated, user, isLoading } = useAuthStore();
   const location = useLocation();
 
+  // Show loading spinner while auth state is being determined
+  if (requireAuth && isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <span className="animate-spin mr-2">🔄</span> Loading...
+      </div>
+    );
+  }
+
   // Check if user is authenticated when required
-  if (requireAuth && !isLoading && !isAuthenticated) {
+  if (requireAuth && !isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Check if user has required role when specified
   if (
     requireAuth &&
-    !isLoading &&
     isAuthenticated &&
     allowedRoles.length > 0 &&
     user &&

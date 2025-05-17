@@ -28,11 +28,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     clearError();
-
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
-    }
-  }, [isAuthenticated, navigate, clearError, from]);
+  }, [clearError]);
 
   useEffect(() => {
     if (error) {

@@ -98,7 +98,7 @@ const TicketDetail: React.FC = () => {
   const handleEscalateToL3 = async (e: React.FormEvent) => {
     e.preventDefault();
     if (id && escalationNotes.trim()) {
-      const success = await escalateToL3(id, escalationNotes);
+      const success = await escalateToL3(id, escalationNotes, currentTicket?.criticalValue || "NONE");
       if (success) {
         setEscalationNotes('');
         setShowEscalationForm(false);
@@ -251,7 +251,7 @@ const TicketDetail: React.FC = () => {
                   <div>
                     <span className="block text-sm font-medium text-gray-500">Created</span>
                     <span className="block text-sm text-gray-900">
-                      {format(new Date(currentTicket.createdAt), 'PPP')}
+                      {currentTicket.createdAt ? format(new Date(currentTicket.createdAt), 'PPP') : '-'}
                     </span>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ const TicketDetail: React.FC = () => {
                   <div>
                     <span className="block text-sm font-medium text-gray-500">Expected Completion</span>
                     <span className="block text-sm text-gray-900">
-                      {format(new Date(currentTicket.expectedCompletionDate), 'PPP')}
+                      {currentTicket.expectedCompletionDate ? format(new Date(currentTicket.expectedCompletionDate), 'PPP') : '-'}
                     </span>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ const TicketDetail: React.FC = () => {
         {(canUpdateStatus() || canEscalateToL2() || canSetCriticalValue() ||
           canEscalateToL3() || canAddAction() || canResolve()) && (
             <div className="px-6 py-5 border-t border-gray-200 flex flex-wrap gap-3">
-              {canUpdateStatus() && (
+              {canUpdateStatus() && user?.role === 'L1_AGENT' && (
                 <div className="dropdown relative">
                   <Button
                     variant="outline"
@@ -341,35 +341,20 @@ const TicketDetail: React.FC = () => {
                   {showActions && (
                     <div className="dropdown-content absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 transition-opacity duration-200 ease-in-out animate-fadeIn">
                       <div className="py-1" role="menu" aria-orientation="vertical">
-                        {user?.role === 'L1_AGENT' && (
-                          <>
-                            <button
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                              onClick={() => handleStatusUpdate('ATTENDING')}
-                              disabled={currentTicket.status === 'ATTENDING'}
-                            >
-                              Mark as Attending (Fixing this)
-                            </button>
-                            <button
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                              onClick={() => handleStatusUpdate('COMPLETED')}
-                              disabled={currentTicket.status === 'COMPLETED'}
-                            >
-                              Mark as Completed
-                            </button>
-                          </>
-                        )}
-
-                        {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
-                          <>
-                            <button
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                              onClick={() => setShowActions(false)}
-                            >
-                              Update Status (via Action)
-                            </button>
-                          </>
-                        )}
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => handleStatusUpdate('ATTENDING')}
+                          disabled={currentTicket.status === 'ATTENDING'}
+                        >
+                          Mark as Attending (Fixing this)
+                        </button>
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => handleStatusUpdate('COMPLETED')}
+                          disabled={currentTicket.status === 'COMPLETED'}
+                        >
+                          Mark as Completed
+                        </button>
                       </div>
                     </div>
                   )}
@@ -610,7 +595,6 @@ const TicketDetail: React.FC = () => {
                   className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md transition-all duration-200"
                 >
                   <option value="">No Status Change</option>
-                  <option value="ATTENDING">ATTENDING</option>
                   <option value="COMPLETED">COMPLETED</option>
                   {currentTicket.status === 'ESCALATED_L3' && (
                     <option value="RESOLVED">RESOLVED</option>

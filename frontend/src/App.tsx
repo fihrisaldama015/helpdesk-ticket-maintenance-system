@@ -1,68 +1,73 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 
 // Pages
+import { Loader2 } from 'lucide-react';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/dashboard/Dashboard';
-import TicketList from './pages/tickets/TicketList';
-import CreateTicket from './pages/tickets/CreateTicket';
-import TicketDetail from './pages/tickets/TicketDetail';
-import EscalatedTickets from './pages/tickets/EscalatedTickets';
-import Unauthorized from './pages/errors/Unauthorized';
 import NotFound from './pages/errors/NotFound';
+import Unauthorized from './pages/errors/Unauthorized';
+import CreateTicket from './pages/tickets/CreateTicket';
+import EscalatedTickets from './pages/tickets/EscalatedTickets';
+import TicketDetail from './pages/tickets/TicketDetail';
+import TicketList from './pages/tickets/TicketList';
 
 function App() {
-  const { loadUser, isAuthenticated } = useAuthStore();
+  const { loadUser, isLoading, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     loadUser();
   }, [loadUser]);
 
+  console.log('[app] auth', isAuthenticated)
+  console.log('[app] loading', isLoading)
+
+
   return (
     <Router>
       <Routes>
         {/* Auth Routes - Redirect if already authenticated */}
-        <Route 
-          path="/login" 
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
         />
-        <Route 
-          path="/register" 
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+        <Route
+          path="/register"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />}
         />
-        
+
         {/* Protected Routes - Redirect if not authenticated */}
-        <Route 
-          path="/dashboard" 
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />} 
+        <Route
+          path="/dashboard"
+          element={<Dashboard />}
         />
-        <Route 
-          path="/tickets" 
-          element={isAuthenticated ? <TicketList /> : <Navigate to="/login" replace />} 
+        <Route
+          path="/tickets"
+          element={<TicketList />}
         />
-        <Route 
-          path="/tickets/create" 
-          element={isAuthenticated ? <CreateTicket /> : <Navigate to="/login" replace />} 
+        <Route
+          path="/tickets/create"
+          element={<CreateTicket />}
         />
-        <Route 
-          path="/tickets/detail/:id" 
-          element={isAuthenticated ? <TicketDetail /> : <Navigate to="/login" replace />} 
+        <Route
+          path="/tickets/detail/:id"
+          element={<TicketDetail />}
         />
-        <Route 
-          path="/escalated" 
-          element={isAuthenticated ? <EscalatedTickets /> : <Navigate to="/login" replace />} 
+        <Route
+          path="/escalated"
+          element={<EscalatedTickets />}
         />
-        
+
         {/* Error Routes */}
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
-        
+
         {/* Default Redirect */}
-        <Route 
-          path="/" 
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} 
+        <Route
+          path="/"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
         />
       </Routes>
     </Router>

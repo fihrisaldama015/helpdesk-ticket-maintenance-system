@@ -1,6 +1,7 @@
 import type {
   CriticalValue,
   Ticket,
+  TicketAction,
   TicketFilter,
   TicketListResponse,
   TicketStatus
@@ -39,8 +40,9 @@ const ticketRepository = {
         }
       }
 
-      const response = await apiClient.get<TicketListResponse>('/tickets', { params });
-      const tickets = response.data.tickets;
+      const response = await apiClient.get<Ticket[]>('/tickets', { params });
+      const tickets = response.data;
+      console.log('tickets:', tickets)
       const result: TicketListResponse = {
         tickets,
         total: tickets.length,
@@ -65,7 +67,21 @@ const ticketRepository = {
         if (filters.status) {
           filters.status.forEach(status => params.append('status', status));
         }
-        // Add other filters similarly
+        if(filters.priority){
+          filters.priority.forEach(priority => params.append('priority', priority));
+        }
+        if(filters.category){
+          filters.category.forEach(category => params.append('category', category));
+        }
+        if (filters.search) {
+          params.append('search', filters.search);
+        }
+        if (filters.page) {
+          params.append('page', filters.page.toString());
+        }
+        if (filters.limit) {
+          params.append('limit', filters.limit.toString());
+        }
       }
 
       const response = await apiClient.get<Ticket[]>('/tickets/my-tickets', { params });
@@ -93,16 +109,25 @@ const ticketRepository = {
         // Add filter parameters
         if (filters.criticalValue) {
           filters.criticalValue.forEach(cv => {
-            if (cv !== null) {
-              params.append('criticalValue', cv);
-            }
+            params.append('criticalValue', cv);
           });
         }
-        // Add other filters
+        if (filters.category) {
+          filters.category.forEach(category => params.append('category', category));
+        }
+        if (filters.search) {
+          params.append('search', filters.search);
+        }
+        if (filters.page) {
+          params.append('page', filters.page.toString());
+        }
+        if (filters.limit) {
+          params.append('limit', filters.limit.toString());
+        }
       }
 
-      const response = await apiClient.get<TicketListResponse>('/tickets/escalated-tickets', { params });
-      const tickets = response.data.tickets;
+      const response = await apiClient.get<Ticket[]>('/tickets/escalated-tickets', { params });
+      const tickets = response.data;
       const result: TicketListResponse = {
         tickets,
         total: tickets.length,
@@ -196,10 +221,11 @@ const ticketRepository = {
   },
 
   // Escalate ticket to L3 (from L2)
-  escalateToL3: async (id: string, escalationNotes: string): Promise<Ticket> => {
+  escalateToL3: async (id: string, escalationNotes: string, criticalValue: CriticalValue): Promise<Ticket> => {
     try {
       const response = await apiClient.put<Ticket>(`/tickets/${id}/escalate-l3`, {
         notes: escalationNotes,
+        criticalValue
       });
       return response.data;
     } catch (error: any) {
@@ -220,7 +246,7 @@ const ticketRepository = {
       const response = await apiClient.post<Ticket>(`/tickets/add-ticket-action/${id}`, {
         action,
         notes,
-        statusChange,
+        newStatus: statusChange,
       });
       return response.data;
     } catch (error: any) {

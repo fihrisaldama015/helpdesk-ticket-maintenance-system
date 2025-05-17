@@ -32,7 +32,7 @@ interface TicketState {
   updateTicketStatus: (id: string, status: TicketStatus) => Promise<boolean>;
   escalateToL2: (id: string, escalationNotes: string) => Promise<boolean>;
   setCriticalValue: (id: string, criticalValue: CriticalValue) => Promise<boolean>;
-  escalateToL3: (id: string, escalationNotes: string) => Promise<boolean>;
+  escalateToL3: (id: string, escalationNotes: string, criticalValue: CriticalValue) => Promise<boolean>;
   addTicketAction: (id: string, action: string, notes: string, statusChange?: TicketStatus) => Promise<boolean>;
   resolveTicket: (id: string, resolutionNotes: string) => Promise<boolean>;
   setFilters: (filters: TicketFilter) => void;
@@ -56,6 +56,7 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
     try {
       const response = await ticketRepository.getTickets(appliedFilters);
+      console.log('response:', response)
       set({
         tickets: response.tickets,
         totalTickets: response.total,
@@ -227,11 +228,11 @@ const useTicketStore = create<TicketState>((set, get) => ({
     }
   },
 
-  escalateToL3: async (id: string, escalationNotes: string) => {
+  escalateToL3: async (id: string, escalationNotes: string, criticalValue: CriticalValue) => {
     set({ isLoading: true, error: null });
 
     try {
-      const response = await ticketRepository.escalateToL3(id, escalationNotes);
+      const response = await ticketRepository.escalateToL3(id, escalationNotes, criticalValue);
 
       set({
         currentTicket: response,
@@ -257,6 +258,7 @@ const useTicketStore = create<TicketState>((set, get) => ({
         currentTicket: response,
         isLoading: false
       });
+
       return true;
     } catch (error: any) {
       set({

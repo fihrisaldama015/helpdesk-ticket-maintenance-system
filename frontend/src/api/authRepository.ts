@@ -46,6 +46,7 @@ const authRepository = {
   getCurrentUser: async (): Promise<User> => {
     try {
       const response = await apiClient.get<User>('/auth/me');
+      console.log('[AUTH REPOSITORY] getCurrentUser', response.data)
       return response.data;
     } catch (error: any) {
       const message =

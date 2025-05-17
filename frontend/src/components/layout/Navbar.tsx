@@ -5,7 +5,7 @@ import useAuthStore from '../../store/authStore';
 import Button from '../ui/Button';
 
 const Navbar: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuthStore();
+  const { user, isLoading, logout, isAuthenticated } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const navigate = useNavigate();
 
@@ -18,6 +18,8 @@ const Navbar: React.FC = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const isUserLoaded = isAuthenticated && !isLoading && user
+
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,9 +31,9 @@ const Navbar: React.FC = () => {
                 <span className="ml-2 text-xl font-bold text-gray-900">HelpDesk</span>
               </Link>
             </div>
-            
+
             {/* Desktop nav links */}
-            {isAuthenticated && (
+            {isUserLoaded && (
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link
                   to="/dashboard"
@@ -39,34 +41,36 @@ const Navbar: React.FC = () => {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  to="/tickets"
-                  className="border-transparent text-gray-500 hover:border-blue-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  Tickets
-                </Link>
-                {(user?.role === 'L2' || user?.role === 'L3') && (
+                {(user?.role === 'L1_AGENT') && (
+                  <Link
+                    to="/tickets"
+                    className="border-transparent text-gray-500 hover:border-blue-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Tickets
+                  </Link>
+                )}
+                {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
                   <Link
                     to="/escalated"
                     className="border-transparent text-gray-500 hover:border-blue-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                   >
-                    Escalated
+                    Escalated Tickets
                   </Link>
                 )}
               </div>
             )}
           </div>
-          
+
           {/* Desktop user controls */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {isAuthenticated ? (
+            {isUserLoaded ? (
               <div className="flex items-center space-x-4">
                 <div className="text-sm font-medium text-gray-700">
-                  {user?.name} ({user?.role})
+                  {user?.firstName} {user?.lastName} ({user?.role})
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleLogout}
                   leftIcon={<LogOut size={16} />}
                 >
@@ -84,7 +88,7 @@ const Navbar: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           {/* Mobile menu button */}
           <div className="flex items-center sm:hidden">
             <button
@@ -105,7 +109,7 @@ const Navbar: React.FC = () => {
       {isMenuOpen && (
         <div className="sm:hidden" id="mobile-menu">
           <div className="pt-2 pb-3 space-y-1">
-            {isAuthenticated ? (
+            {isUserLoaded ? (
               <>
                 <Link
                   to="/dashboard"
@@ -114,20 +118,22 @@ const Navbar: React.FC = () => {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  to="/tickets"
-                  className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Tickets
-                </Link>
-                {(user?.role === 'L2' || user?.role === 'L3') && (
+                {(user?.role === 'L1_AGENT') && (
+                  <Link
+                    to="/tickets"
+                    className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Tickets
+                  </Link>
+                )}
+                {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
                   <Link
                     to="/escalated"
                     className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Escalated
+                    Escalated Ticket
                   </Link>
                 )}
                 <div className="border-t border-gray-200 pt-4 pb-3">
@@ -136,7 +142,7 @@ const Navbar: React.FC = () => {
                       <User className="h-10 w-10 rounded-full text-gray-400" />
                     </div>
                     <div className="ml-3">
-                      <div className="text-base font-medium text-gray-800">{user?.name}</div>
+                      <div className="text-base font-medium text-gray-800">{user?.firstName} {user?.lastName}</div>
                       <div className="text-sm font-medium text-gray-500">{user?.role} Role</div>
                     </div>
                   </div>
