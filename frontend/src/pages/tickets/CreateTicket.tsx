@@ -361,7 +361,7 @@ const CreateTicket: React.FC = () => {
                   type="button"
                   variant='outline'
                   className="mr-4 hover:bg-gray-50 transition-all duration-200 transform hover:translate-y-[-2px]"
-                  onClick={() => { }}
+                  onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>
