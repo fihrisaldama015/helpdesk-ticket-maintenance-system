@@ -3,10 +3,10 @@ import {
   CreateTicketDto,
   CriticalValue,
   TicketStatus,
-  UpdateTicketDto
+  UpdateTicketDto,
+  UserRole
 } from '../models';
 import prisma from '../config/prisma';
-import { UserRole } from '@prisma/client';
 
 export class TicketService {
   async createTicket(ticketData: CreateTicketDto, userId: string) {

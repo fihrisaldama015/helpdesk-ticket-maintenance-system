@@ -142,7 +142,22 @@ describe('TicketController', () => {
         createdById: 'user123',
         assignedToId: 'user123',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        createdBy: {
+          id: 'user123',
+          email: 'creator@example.com',
+          firstName: 'Creator',
+          lastName: 'User',
+          role: UserRole.L1_AGENT
+        },
+        assignedTo: {
+          id: 'user123',
+          email: 'creator@example.com',
+          firstName: 'Creator',
+          lastName: 'User',
+          role: UserRole.L1_AGENT
+        },
+        actions: []
       };
 
       ticketService.updateTicket.mockResolvedValueOnce(updatedTicket);
@@ -192,14 +207,40 @@ describe('TicketController', () => {
         createdById: 'user123',
         assignedToId: null,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        createdBy: {
+          id: 'user123',
+          email: 'creator@example.com',
+          firstName: 'Creator',
+          lastName: 'User',
+          role: UserRole.L1_AGENT
+        },
+        assignedTo: null,
+        actions: [
+          {
+            id: 'action1',
+            createdAt: new Date(),
+            ticketId: 'ticket123',
+            userId: 'user123',
+            action: 'Escalated to L2',
+            notes: updateData.notes,
+            newStatus: TicketStatus.ESCALATED_L2,
+            user: {
+              id: 'user123',
+              email: 'creator@example.com',
+              firstName: 'Creator',
+              lastName: 'User',
+              role: UserRole.L1_AGENT
+            }
+          }
+        ]
       };
       ticketService.escalateTicket.mockResolvedValueOnce(updatedTicket);
       await ticketController.escalateToL2(req, res);
       expect(ticketService.escalateTicket).toHaveBeenCalledWith(
         'ticket123',
         'user123',
-        'Cannot resolve at L1, escalating to L2',
+        updateData.notes,
         'L2',
       );
 
@@ -242,7 +283,22 @@ describe('TicketController', () => {
         createdById: 'user123',
         assignedToId: 'user456',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        createdBy: {
+          id: 'user123',
+          email: 'l1@example.com',
+          firstName: 'L1',
+          lastName: 'Agent',
+          role: UserRole.L1_AGENT,
+        },
+        assignedTo: {
+          id: 'user456',
+          email: 'l2@example.com',
+          firstName: 'L2',
+          lastName: 'Support',
+          role: UserRole.L2_SUPPORT,
+        },
+        actions: []
       };
 
       ticketService.updateTicket.mockResolvedValueOnce(updatedTicket);
@@ -251,14 +307,17 @@ describe('TicketController', () => {
 
       expect(ticketService.updateTicket).toHaveBeenCalledWith(
         'ticket123',
-        { criticalValue: 'C2' },
-        'user456'
+        updateData,
+        req.user?.id,
+        req.user?.role
       );
 
       expect(res._getStatusCode()).toBe(200);
       expect(JSON.parse(res._getData())).toEqual(expect.objectContaining({
         id: 'ticket123',
         criticalValue: 'C2',
+        status: TicketStatus.ESCALATED_L2,
+        assignedToId: req.user?.id,
       }));
     });
 
@@ -555,7 +614,39 @@ describe('TicketController', () => {
         createdById: 'user123',
         assignedToId: 'user789',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        createdBy: {
+          id: 'user123',
+          email: 'creator@example.com',
+          firstName: 'Creator',
+          lastName: 'User',
+          role: UserRole.L1_AGENT
+        },
+        assignedTo: {
+          id: 'user789',
+          email: 'assignee@example.com',
+          firstName: 'Assignee',
+          lastName: 'User',
+          role: UserRole.L3_SUPPORT
+        },
+        actions: [
+          {
+            id: 'action1',
+            ticketId: 'ticket123',
+            userId: 'user789',
+            action: 'Resolved ticket',
+            notes: resolveData.resolutionNotes,
+            newStatus: TicketStatus.RESOLVED,
+            createdAt: new Date(),
+            user: {
+              id: 'user789',
+              email: 'assignee@example.com',
+              firstName: 'Assignee',
+              lastName: 'User',
+              role: UserRole.L3_SUPPORT
+            }
+          }
+        ]
       };
 
       ticketService.resolveTicket.mockResolvedValueOnce(resolvedTicket);
