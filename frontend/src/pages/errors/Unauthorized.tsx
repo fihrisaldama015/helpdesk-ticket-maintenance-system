@@ -2,7 +2,7 @@ import { ShieldAlert } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
+import Button from '../../components/Button';
 
 const Unauthorized: React.FC = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import StatusBadge from '../../../components/ui/StatusBadge';
+import StatusBadge from '../../../components/StatusBadge';
 import { TicketStatus, TicketPriority, CriticalValue } from '../../../types';
 
 describe('StatusBadge Component', () => {

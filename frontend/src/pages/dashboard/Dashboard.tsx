@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, Clock, Loader, AlertTriangle, CheckCircle } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
+import Button from '../../components/Button';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
 
@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
     <Layout requireAuth>
       <div className="bg-gradient-to-br from-white to-blue-50 shadow-lg rounded-xl mb-6 transition-all duration-300 hover:shadow-xl">
         <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-white via-blue-50 to-white">
-          <h3 className="text-xl leading-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
+          <h3 className="text-xl leading-6 w-fit font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
             Welcome, {user?.firstName} {user?.lastName}!
           </h3>
           <p className="mt-1 text-sm font-medium text-gray-600">
@@ -66,7 +66,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-gray-200 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-blue-100 p-3 rounded-full">
@@ -84,7 +84,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 ring-1 ring-gray-200 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-yellow-100 p-3 rounded-full">
@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-red-50 to-red-100 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
+            <div className="bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-gray-200 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-red-100 p-3 rounded-full">
@@ -120,7 +120,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 ring-1 ring-gray-200 overflow-hidden shadow-md rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] transform cursor-pointer">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-green-100 p-3 rounded-full">
@@ -187,22 +187,20 @@ const Dashboard: React.FC = () => {
                         </Link>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
-                          ticket.status === 'NEW' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${ticket.status === 'NEW' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
                           ticket.status === 'ATTENDING' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
-                          ticket.status === 'COMPLETED' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                          ticket.status === 'RESOLVED' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
-                          'bg-red-100 text-red-800 hover:bg-red-200'
-                        }`}>
+                            ticket.status === 'COMPLETED' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                              ticket.status === 'RESOLVED' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
+                                'bg-red-100 text-red-800 hover:bg-red-200'
+                          }`}>
                           {ticket.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
-                          ticket.priority === 'LOW' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' :
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${ticket.priority === 'LOW' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' :
                           ticket.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
-                          'bg-red-100 text-red-800 hover:bg-red-200'
-                        }`}>
+                            'bg-red-100 text-red-800 hover:bg-red-200'
+                          }`}>
                           {ticket.priority}
                         </span>
                       </td>
@@ -223,20 +221,20 @@ const Dashboard: React.FC = () => {
           )}
 
           <div className="mt-6 text-center">
-            {user?.role === 'L1_AGENT'? (
+            {user?.role === 'L1_AGENT' ? (
               <Link to="/tickets" className="inline-block transform hover:scale-105 transition-transform duration-200">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   className="hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 shadow-sm hover:shadow"
                 >
                   View all tickets
                 </Button>
               </Link>
-            ):(
+            ) : (
               <Link to="/escalated" className="inline-block transform hover:scale-105 transition-transform duration-200">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   className="hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 shadow-sm hover:shadow"
                 >

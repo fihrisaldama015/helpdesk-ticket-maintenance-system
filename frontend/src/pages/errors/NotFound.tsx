@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileQuestion } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
+import Button from '../../components/Button';
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();

@@ -3,7 +3,6 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import useAuthStore from './store/authStore';
 
 // Pages
-import { Loader2 } from 'lucide-react';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/dashboard/Dashboard';

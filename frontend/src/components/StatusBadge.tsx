@@ -1,6 +1,6 @@
 import React from 'react';
-import { CriticalValue, TicketPriority, TicketStatus } from '../../types';
-import { cn } from '../../utils/cn';
+import { CriticalValue, TicketPriority, TicketStatus } from '../types';
+import { cn } from '../lib/utils';
 
 interface StatusBadgeProps {
   status?: TicketStatus;

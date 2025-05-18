@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
+import Button from '../../components/Button';
 import useAuthStore from '../../store/authStore';
 import AuthBackgroundOverlay from './AuthBackgroundOverlay';
 
@@ -59,12 +59,12 @@ const Login: React.FC = () => {
       <AuthBackgroundOverlay />
       <div className="min-h-[calc(100vh-13rem)] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 animate-fadeInUp">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 animate-slideInLeft">
             Sign in to your account
           </h2>
         </div>
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white/70 backdrop-blur-lg py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 glass-card animate-fadeInUp">
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-slideDown">
+          <div className="bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 ring-1 ring-gray-200">
             {showError && error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 transition-opacity duration-500 animate-fadeIn">
                 <div className="flex">

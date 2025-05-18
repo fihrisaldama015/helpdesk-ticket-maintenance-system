@@ -2,8 +2,8 @@ import { Filter, PlusCircle, Search, AlertTriangle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
-import StatusBadge from '../../components/ui/StatusBadge';
+import Button from '../../components/Button';
+import StatusBadge from '../../components/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
 import { TicketCategory, TicketFilter, TicketPriority, TicketStatus } from '../../types';
@@ -108,9 +108,15 @@ const TicketList: React.FC = () => {
     <Layout requireAuth>
       <div className="bg-gradient-to-br from-white to-blue-50 shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl">
         <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-white via-blue-50 to-white flex justify-between items-center">
-          <h3 className="text-xl leading-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
-            {user?.role === 'L1_AGENT' ? 'My Tickets' : 'All Tickets'}
-          </h3>
+          <div>
+            <h3 className="text-xl leading-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
+              {user?.role === 'L1_AGENT' ? 'My Tickets' : 'All Tickets'}
+            </h3>
+            <p className="mt-1 text-sm font-medium text-gray-600">
+              {user?.role === 'L1_AGENT' ? 'Tickets assigned to you' : 'All tickets in the system'}
+            </p>
+          </div>
+
           <div className="flex space-x-3">
             <button
               className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
@@ -122,8 +128,6 @@ const TicketList: React.FC = () => {
             {user?.role === 'L1_AGENT' && (
               <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
                 <Button
-                  variant="primary"
-                  size="sm"
                   leftIcon={<PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />}
                   className="group hover:shadow-md transition-all duration-200"
                 >
@@ -149,9 +153,6 @@ const TicketList: React.FC = () => {
                     NEW: 'New',
                     ATTENDING: 'In Progress',
                     ESCALATED_L2: 'Escalated to L2',
-                    ESCALATED_L3: 'Escalated to L3',
-                    COMPLETED: 'Completed',
-                    RESOLVED: 'Resolved',
                   }).map((status, index) => (
                     <div key={index} className="flex items-center group">
                       <input
@@ -162,17 +163,11 @@ const TicketList: React.FC = () => {
                           NEW: 'New',
                           ATTENDING: 'In Progress',
                           ESCALATED_L2: 'Escalated to L2',
-                          ESCALATED_L3: 'Escalated to L3',
-                          COMPLETED: 'Completed',
-                          RESOLVED: 'Resolved',
                         })[index] as TicketStatus)}
                         onChange={() => handleStatusFilterChange(Object.keys({
                           NEW: 'New',
                           ATTENDING: 'In Progress',
                           ESCALATED_L2: 'Escalated to L2',
-                          ESCALATED_L3: 'Escalated to L3',
-                          COMPLETED: 'Completed',
-                          RESOLVED: 'Resolved',
                         })[index] as TicketStatus)}
                       />
                       <label htmlFor={`status-${index}`} className="ml-2 block text-sm text-gray-700 group-hover:text-blue-700 transition-colors duration-200 cursor-pointer">
@@ -302,141 +297,143 @@ const TicketList: React.FC = () => {
             </div>
           </div>
         </div>
-        {isLoading ? (
-          <div className="py-10 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : tickets.length > 0 ? (
-          <div className="overflow-x-auto rounded-xl shadow-md">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gradient-to-r from-blue-50 to-white">
-                <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Priority
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Category
-                  </th>
-                  {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
+        <div className='py-5 px-6'>
+          {isLoading ? (
+            <div className="py-10 flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : tickets.length > 0 ? (
+            <div className="overflow-x-auto rounded-xl shadow-md">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gradient-to-r from-blue-50 to-white">
+                  <tr>
                     <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                      Critical Value
+                      ID
                     </th>
-                  )}
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Due Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {tickets.map((ticket) => (
-                  <tr key={ticket.id} className="hover:bg-blue-50 transition-colors duration-150 ease-in-out">
-                    <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
-                      {ticket.id.substring(0, 8)}...
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline">
-                        {ticket.title}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
-                      <StatusBadge status={ticket.status} />
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
-                      <StatusBadge priority={ticket.priority} />
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
-                      {ticket.category}
-                    </td>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                      Category
+                    </th>
                     {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
-                      <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
-                        {ticket.criticalValue ? (
-                          <StatusBadge criticalValue={ticket.criticalValue} />
-                        ) : (
-                          <span className="text-gray-400 text-sm italic">Not set</span>
-                        )}
-                      </td>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                        Critical Value
+                      </th>
                     )}
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(ticket.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(ticket.expectedCompletionDate).toLocaleDateString()}
-                    </td>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                      Due Date
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {tickets.map((ticket) => (
+                    <tr key={ticket.id} className="hover:bg-blue-50 transition-colors duration-150 ease-in-out">
+                      <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
+                        {ticket.id.substring(0, 8)}...
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <Link to={`/tickets/detail/${ticket.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline">
+                          {ticket.title}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
+                        <StatusBadge status={ticket.status} />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
+                        <StatusBadge priority={ticket.priority} />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                        {ticket.category}
+                      </td>
+                      {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
+                        <td className="px-3 py-4 whitespace-nowrap transform transition-all duration-200 hover:scale-105">
+                          {ticket.criticalValue ? (
+                            <StatusBadge criticalValue={ticket.criticalValue} />
+                          ) : (
+                            <span className="text-gray-400 text-sm italic">Not set</span>
+                          )}
+                        </td>
+                      )}
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {new Date(ticket.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {new Date(ticket.expectedCompletionDate).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-            {/* Pagination */}
-            <div className="py-3 flex items-center justify-between border-t border-gray-200 mt-4">
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Showing page <span className="font-medium">{currentPage}</span>
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage <= 1}
-                      className={`relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${currentPage <= 1
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
-                    >
-                      <span className="sr-only">Previous</span>
-                      ← Prev
-                    </button>
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={tickets.length < itemsPerPage}
-                      className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${tickets.length < itemsPerPage
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
-                    >
-                      <span className="sr-only">Next</span>
-                      Next →
-                    </button>
-                  </nav>
+              {/* Pagination */}
+              <div className="py-3 px-3 flex items-center justify-between border-t border-gray-200 mt-4">
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing page <span className="font-medium">{currentPage}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage <= 1}
+                        className={`relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${currentPage <= 1
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
+                      >
+                        <span className="sr-only">Previous</span>
+                        ← Prev
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={tickets.length < itemsPerPage}
+                        className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${tickets.length < itemsPerPage
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
+                      >
+                        <span className="sr-only">Next</span>
+                        Next →
+                      </button>
+                    </nav>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="py-10 text-center bg-blue-50 rounded-xl shadow-inner">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md text-blue-500 mb-4 animate-bounce">
-              <AlertTriangle size={24} />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No tickets found</h3>
-            <p className="text-gray-600 max-w-md mx-auto mb-6">There are no tickets matching your current filters.</p>
-            {user?.role === 'L1_AGENT' && (
-              <div className="mt-4">
-                <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    leftIcon={<PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />}
-                    className="group hover:shadow-md transition-all duration-200"
-                  >
-                    Create a new ticket
-                  </Button>
-                </Link>
+          ) : (
+            <div className="py-10 text-center bg-blue-50 rounded-xl shadow-inner">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md text-blue-500 mb-4 animate-bounce">
+                <AlertTriangle size={24} />
               </div>
-            )}
-          </div>
-        )}
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No tickets found</h3>
+              <p className="text-gray-600 max-w-md mx-auto mb-6">There are no tickets matching your current filters.</p>
+              {user?.role === 'L1_AGENT' && (
+                <div className="mt-4">
+                  <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />}
+                      className="group hover:shadow-md transition-all duration-200"
+                    >
+                      Create a new ticket
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </Layout >
   );

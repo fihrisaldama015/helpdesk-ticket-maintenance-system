@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TicketIcon, LogOut, User, Menu } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
-import Button from '../ui/Button';
+import Button from '../Button';
 
 const Navbar: React.FC = () => {
   const { user, isLoading, logout, isAuthenticated } = useAuthStore();
@@ -37,14 +37,14 @@ const Navbar: React.FC = () => {
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link
                   to="/dashboard"
-                  className="border-transparent text-gray-600 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105"
+                  className="animate-fadeIn border-transparent text-gray-600 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105"
                 >
                   Dashboard
                 </Link>
                 {(user?.role === 'L1_AGENT') && (
                   <Link
                     to="/tickets"
-                    className="border-transparent text-gray-600 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105"
+                    className="animate-fadeIn border-transparent text-gray-600 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105"
                   >
                     Tickets
                   </Link>
@@ -52,7 +52,7 @@ const Navbar: React.FC = () => {
                 {(user?.role === 'L2_SUPPORT' || user?.role === 'L3_SUPPORT') && (
                   <Link
                     to="/escalated"
-                    className="border-transparent text-gray-600 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105"
+                    className="animate-fadeIn border-transparent text-gray-600 hover:border-blue-500 hover:text-blue-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-200 ease-in-out hover:scale-105"
                   >
                     Escalated Tickets
                   </Link>
@@ -65,25 +65,25 @@ const Navbar: React.FC = () => {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {isUserLoaded ? (
               <div className="flex items-center space-x-4">
-                <div className="text-sm font-medium text-gray-700 bg-blue-50 py-1 px-3 rounded-full shadow-sm">
+                <div className="text-sm font-medium text-gray-700 bg-white ring-1 ring-gray-200 py-1 px-3 rounded-full shadow-sm animate-fadeIn">
                   {user?.firstName} {user?.lastName} <span className="text-blue-600 font-semibold">({user?.role})</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  leftIcon={<LogOut size={16} className="group-hover:text-red-500 transition-colors duration-200" />}
+                  leftIcon={<LogOut size={16} className="group-hover:text-red-500 transition-colors duration-200 animate-slideInLeft" />}
                   className="group hover:bg-red-50 transition-all duration-200"
                 >
-                  <span className="group-hover:text-red-600 transition-colors duration-200">Logout</span>
+                  <span className="group-hover:text-red-600 transition-colors duration-200 animate-slideInLeft">Logout</span>
                 </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link to="/login" className="transform hover:scale-105 transition-transform duration-200">
+                <Link to="/login" className="animate-slideInLeft">
                   <Button variant="outline" size="sm" className="hover:shadow-md transition-shadow duration-200">Login</Button>
                 </Link>
-                <Link to="/register" className="transform hover:scale-105 transition-transform duration-200">
+                <Link to="/register" className="animate-slideInLeft">
                   <Button variant="primary" size="sm" className="hover:shadow-md transition-shadow duration-200">Register</Button>
                 </Link>
               </div>

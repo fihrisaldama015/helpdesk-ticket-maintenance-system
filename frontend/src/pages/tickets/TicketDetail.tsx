@@ -1,18 +1,39 @@
 import { format } from 'date-fns';
 import {
+  Activity,
+  ActivityIcon,
   AlertCircle,
+  AlertOctagon,
+  AlertTriangle,
+  ArrowLeft,
   ArrowUpCircle,
   Calendar,
+  Check,
+  CheckCircle,
+  CheckSquare,
   ChevronDown,
+  Clipboard,
+  ClipboardList,
   Clock,
+  FileText,
+  History,
   MessageCircle,
-  Tag
+  Play,
+  Plus,
+  PlusCircle,
+  Save,
+  Shield,
+  Tag,
+  Ticket,
+  UserCheck,
+  Users,
+  X
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Button from '../../components/Button';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/ui/Button';
-import StatusBadge from '../../components/ui/StatusBadge';
+import StatusBadge from '../../components/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
 import { CriticalValue, TicketAction, TicketStatus } from '../../types';
@@ -194,20 +215,25 @@ const TicketDetail: React.FC = () => {
 
   return (
     <Layout requireAuth>
-      <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
+      <div className="bg-white shadow-lg rounded-lg mb-6 overflow-hidden border border-blue-100 transition-all duration-300 hover:shadow-xl">
         {/* Ticket Header */}
-        <div className="px-6 py-5 border-b border-gray-200">
+        <div className="px-6 py-5 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-            <div>
-              <h3 className="text-xl font-medium text-gray-900 mb-1">
-                {currentTicket.title}
-              </h3>
-              <div className="flex flex-wrap gap-2 mb-2">
-                <StatusBadge status={currentTicket.status} />
-                <StatusBadge priority={currentTicket.priority} />
-                {currentTicket.criticalValue && (
-                  <StatusBadge criticalValue={currentTicket.criticalValue} />
-                )}
+            <div className="flex items-center">
+              <div className="mr-3 bg-blue-100 p-2 rounded-full">
+                <Ticket className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-medium text-gray-900 mb-1 transition-all duration-300 hover:text-blue-700">
+                  {currentTicket.title}
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <StatusBadge status={currentTicket.status} />
+                  <StatusBadge priority={currentTicket.priority} />
+                  {currentTicket.criticalValue && (
+                    <StatusBadge criticalValue={currentTicket.criticalValue} />
+                  )}
+                </div>
               </div>
             </div>
             <div className="mt-4 sm:mt-0">
@@ -215,8 +241,9 @@ const TicketDetail: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/tickets')}
-                className="hover:bg-gray-100 transition-colors"
+                className="hover:bg-blue-50 transition-colors duration-300 flex items-center gap-2 border-blue-200"
               >
+                <ArrowLeft size={16} />
                 Back to Tickets
               </Button>
             </div>
@@ -225,42 +252,45 @@ const TicketDetail: React.FC = () => {
 
         {/* Ticket Information */}
         <div className="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div className="border rounded-md p-4 bg-gray-50">
-              <h4 className="font-medium text-gray-700 mb-3">Ticket Details</h4>
+          <div className="transform transition-all duration-300 hover:scale-102">
+            <div className="border border-blue-100 rounded-md p-4 bg-white shadow-sm hover:shadow transition-all duration-300">
+              <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+                <Clipboard className="h-4 w-4 mr-2 text-blue-500" />
+                Ticket Details
+              </h4>
 
               <div className="space-y-3">
-                <div className="flex items-start">
-                  <Tag className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                <div className="flex items-start group">
+                  <Tag className="h-5 w-5 text-blue-500 mr-2 mt-0.5 group-hover:text-blue-600 transition-colors duration-300" />
                   <div>
                     <span className="block text-sm font-medium text-gray-500">Category</span>
-                    <span className="block text-sm text-gray-900">{currentTicket.category}</span>
+                    <span className="block text-sm text-gray-900 group-hover:text-blue-600 transition-colors duration-300">{currentTicket.category}</span>
                   </div>
                 </div>
 
-                <div className="flex items-start">
-                  <AlertCircle className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                <div className="flex items-start group">
+                  <AlertCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 group-hover:text-blue-600 transition-colors duration-300" />
                   <div>
                     <span className="block text-sm font-medium text-gray-500">Priority</span>
-                    <span className="block text-sm text-gray-900">{currentTicket.priority}</span>
+                    <span className="block text-sm text-gray-900 group-hover:text-blue-600 transition-colors duration-300">{currentTicket.priority}</span>
                   </div>
                 </div>
 
-                <div className="flex items-start">
-                  <Calendar className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                <div className="flex items-start group">
+                  <Calendar className="h-5 w-5 text-blue-500 mr-2 mt-0.5 group-hover:text-blue-600 transition-colors duration-300" />
                   <div>
                     <span className="block text-sm font-medium text-gray-500">Created</span>
-                    <span className="block text-sm text-gray-900">
+                    <span className="block text-sm text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
                       {currentTicket.createdAt ? format(new Date(currentTicket.createdAt), 'PPP') : '-'}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-start">
-                  <Clock className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                <div className="flex items-start group">
+                  <Clock className="h-5 w-5 text-blue-500 mr-2 mt-0.5 group-hover:text-blue-600 transition-colors duration-300" />
                   <div>
                     <span className="block text-sm font-medium text-gray-500">Expected Completion</span>
-                    <span className="block text-sm text-gray-900">
+                    <span className="block text-sm text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
                       {currentTicket.expectedCompletionDate ? format(new Date(currentTicket.expectedCompletionDate), 'PPP') : '-'}
                     </span>
                   </div>
@@ -269,15 +299,18 @@ const TicketDetail: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <div className="border rounded-md p-4 bg-gray-50">
-              <h4 className="font-medium text-gray-700 mb-3">Created By</h4>
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 rounded-full h-10 w-10 flex items-center justify-center text-blue-600 font-medium">
+          <div className="transform transition-all duration-300 hover:scale-102">
+            <div className="border border-blue-100 rounded-md p-4 bg-white shadow-sm hover:shadow transition-all duration-300">
+              <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+                <Users className="h-4 w-4 mr-2 text-blue-500" />
+                Created By
+              </h4>
+              <div className="flex items-center mb-4 group">
+                <div className="bg-blue-100 rounded-full h-10 w-10 flex items-center justify-center text-blue-600 font-medium group-hover:bg-blue-200 transition-all duration-300">
                   {currentTicket.createdBy?.firstName.charAt(0).toUpperCase()}
                 </div>
                 <div className="ml-3">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
                     {currentTicket.createdBy?.firstName} {currentTicket.createdBy?.lastName}
                   </div>
                   <div className="text-sm text-gray-500">ID: {currentTicket.createdBy?.id.substring(0, 8)}...</div>
@@ -286,13 +319,16 @@ const TicketDetail: React.FC = () => {
 
               {currentTicket.assignedTo && (
                 <>
-                  <h4 className="font-medium text-gray-700 mb-3">Assigned To</h4>
-                  <div className="flex items-center">
-                    <div className="bg-green-100 rounded-full h-10 w-10 flex items-center justify-center text-green-600 font-medium">
+                  <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+                    <UserCheck className="h-4 w-4 mr-2 text-blue-500" />
+                    Assigned To
+                  </h4>
+                  <div className="flex items-center group">
+                    <div className="bg-green-100 rounded-full h-10 w-10 flex items-center justify-center text-green-600 font-medium group-hover:bg-green-200 transition-all duration-300">
                       {currentTicket.assignedTo?.firstName.charAt(0).toUpperCase()}
                     </div>
                     <div className="ml-3">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors duration-300">
                         {currentTicket.assignedTo?.firstName} {currentTicket.assignedTo?.lastName}
                       </div>
                       <div className="text-sm text-gray-500">ID: {currentTicket.assignedTo?.id.substring(0, 8)}...</div>
@@ -305,20 +341,22 @@ const TicketDetail: React.FC = () => {
         </div>
 
         {/* Ticket Description */}
-        <div className="px-6 py-5 border-t border-gray-200">
-          <h4 className="font-medium text-gray-700 mb-3">Description</h4>
-          <div className="bg-gray-50 rounded-md p-4 whitespace-pre-wrap text-gray-800">
+        <div className="px-6 py-5 border-t border-blue-100">
+          <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+            <FileText className="h-4 w-4 mr-2 text-blue-500" />
+            Description
+          </h4>
+          <div className="bg-blue-50 rounded-md p-4 whitespace-pre-wrap text-gray-800 border border-blue-100 transition-all duration-300 hover:shadow-md">
             {currentTicket.description}
           </div>
         </div>
 
         {/* Error Message */}
         {showError && error && (
-          <div className="mx-6 my-3 bg-red-50 border-l-4 border-red-500 p-4 animate-fadeIn">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
+          <div className="mx-6 my-3 bg-red-50 border-l-4 border-red-500 p-4 animate-fadeIn flex items-center">
+            <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+            <div>
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           </div>
         )}
@@ -326,7 +364,7 @@ const TicketDetail: React.FC = () => {
         {/* Action Buttons */}
         {(canUpdateStatus() || canEscalateToL2() || canSetCriticalValue() ||
           canEscalateToL3() || canAddAction() || canResolve()) && (
-            <div className="px-6 py-5 border-t border-gray-200 flex flex-wrap gap-3">
+            <div className="px-6 py-5 border-t border-blue-100 flex flex-wrap gap-3 bg-blue-50">
               {canUpdateStatus() && user?.role === 'L1_AGENT' && (
                 <div className="dropdown relative">
                   <Button
@@ -334,25 +372,28 @@ const TicketDetail: React.FC = () => {
                     size="sm"
                     rightIcon={<ChevronDown size={16} />}
                     onClick={() => setShowActions(!showActions)}
-                    className="hover:bg-gray-100 transition-colors"
+                    className="hover:bg-blue-100 transition-colors duration-300 border-blue-300 flex items-center gap-2"
                   >
+                    <ActivityIcon size={16} />
                     Status
                   </Button>
                   {showActions && (
-                    <div className="dropdown-content absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 transition-opacity duration-200 ease-in-out animate-fadeIn">
+                    <div className="dropdown-content absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 transition-opacity animate-fadeIn">
                       <div className="py-1" role="menu" aria-orientation="vertical">
                         <button
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors duration-200 flex items-center"
                           onClick={() => handleStatusUpdate('ATTENDING')}
                           disabled={currentTicket.status === 'ATTENDING'}
                         >
+                          <Play className="h-4 w-4 mr-2 text-blue-500" />
                           Mark as Attending (Fixing this)
                         </button>
                         <button
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors duration-200 flex items-center"
                           onClick={() => handleStatusUpdate('COMPLETED')}
                           disabled={currentTicket.status === 'COMPLETED'}
                         >
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
                           Mark as Completed
                         </button>
                       </div>
@@ -365,10 +406,10 @@ const TicketDetail: React.FC = () => {
                 <Button
                   variant="warning"
                   size="sm"
-                  leftIcon={<ArrowUpCircle size={16} />}
                   onClick={() => setShowEscalationForm(!showEscalationForm)}
-                  className="bg-orange-500 hover:bg-orange-600 transition-colors"
+                  className="bg-orange-500 hover:bg-orange-600 transition-colors duration-300 flex items-center gap-2 transform hover:scale-105"
                 >
+                  <ArrowUpCircle size={16} />
                   Escalate to L2
                 </Button>
               )}
@@ -378,8 +419,9 @@ const TicketDetail: React.FC = () => {
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowCriticalValueForm(!showCriticalValueForm)}
-                  className="bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                  className="bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2 transform hover:scale-105"
                 >
+                  <Shield size={16} />
                   Set Critical Value
                 </Button>
               )}
@@ -388,10 +430,10 @@ const TicketDetail: React.FC = () => {
                 <Button
                   variant="danger"
                   size="sm"
-                  leftIcon={<ArrowUpCircle size={16} />}
                   onClick={() => setShowEscalationForm(!showEscalationForm)}
-                  className="bg-red-600 hover:bg-red-700 transition-colors"
+                  className="bg-red-600 hover:bg-red-700 transition-colors duration-300 flex items-center gap-2 transform hover:scale-105"
                 >
+                  <AlertOctagon size={16} />
                   Escalate to L3
                 </Button>
               )}
@@ -400,10 +442,10 @@ const TicketDetail: React.FC = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  leftIcon={<MessageCircle size={16} />}
                   onClick={() => setShowActions(!showActions)}
-                  className="bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2 transform hover:scale-105"
                 >
+                  <MessageCircle size={16} />
                   Add Action
                 </Button>
               )}
@@ -413,8 +455,9 @@ const TicketDetail: React.FC = () => {
                   variant="success"
                   size="sm"
                   onClick={() => setShowResolutionForm(!showResolutionForm)}
-                  className="bg-emerald-600 hover:bg-emerald-700 transition-colors"
+                  className="bg-emerald-600 hover:bg-emerald-700 transition-colors duration-300 flex items-center gap-2 transform hover:scale-105"
                 >
+                  <CheckSquare size={16} />
                   Resolve Ticket
                 </Button>
               )}
@@ -423,11 +466,12 @@ const TicketDetail: React.FC = () => {
 
         {/* Escalation Form (L1->L2 or L2->L3) */}
         {showEscalationForm && (
-          <div className="px-6 py-5 border-t border-gray-200 animate-fadeIn">
-            <h4 className="font-medium text-gray-700 mb-3">
+          <div className="px-6 py-5 border-t border-blue-100 animate-fadeIn bg-blue-50">
+            <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+              <ArrowUpCircle className="h-4 w-4 mr-2 text-blue-500" />
               {canEscalateToL2() ? 'Escalate to L2 Support' : 'Escalate to L3 Support'}
             </h4>
-            <form onSubmit={canEscalateToL2() ? handleEscalateToL2 : handleEscalateToL3}>
+            <form onSubmit={canEscalateToL2() ? handleEscalateToL2 : handleEscalateToL3} className="bg-white p-4 rounded-md shadow-sm border border-blue-100">
               <div className="mb-4">
                 <label htmlFor="escalationNotes" className="block text-sm font-medium text-gray-700 mb-1">
                   Escalation Notes
@@ -448,8 +492,9 @@ const TicketDetail: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowEscalationForm(false)}
-                  className="hover:bg-gray-100 transition-colors"
+                  className="hover:bg-blue-50 transition-colors duration-300 border-blue-200 flex items-center gap-2"
                 >
+                  <X size={16} />
                   Cancel
                 </Button>
                 <Button
@@ -457,8 +502,9 @@ const TicketDetail: React.FC = () => {
                   variant={canEscalateToL2() ? "warning" : "danger"}
                   size="sm"
                   isLoading={isLoading}
-                  className={`${canEscalateToL2() ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-600 hover:bg-red-700'} transition-colors`}
+                  className={`${canEscalateToL2() ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-600 hover:bg-red-700'} transition-colors duration-300 flex items-center gap-2`}
                 >
+                  <ArrowUpCircle size={16} />
                   Escalate
                 </Button>
               </div>
@@ -468,15 +514,18 @@ const TicketDetail: React.FC = () => {
 
         {/* Critical Value Form (L2) */}
         {showCriticalValueForm && (
-          <div className="px-6 py-5 border-t border-gray-200 animate-fadeIn">
-            <h4 className="font-medium text-gray-700 mb-3">Set Critical Value</h4>
-            <form onSubmit={handleSetCriticalValue}>
+          <div className="px-6 py-5 border-t border-blue-100 animate-fadeIn bg-blue-50">
+            <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+              <Shield className="h-4 w-4 mr-2 text-blue-500" />
+              Set Critical Value
+            </h4>
+            <form onSubmit={handleSetCriticalValue} className="bg-white p-4 rounded-md shadow-sm border border-blue-100">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Critical Value
                 </label>
                 <div className="flex flex-col space-y-2">
-                  <div className="flex items-center">
+                  <div className="flex items-center p-2 rounded-md hover:bg-blue-50 transition-colors duration-200">
                     <input
                       id="critical-c1"
                       name="criticalValue"
@@ -487,12 +536,12 @@ const TicketDetail: React.FC = () => {
                       onChange={() => setSelectedCriticalValue('C1')}
                       required
                     />
-                    <label htmlFor="critical-c1" className="ml-3">
+                    <label htmlFor="critical-c1" className="ml-3 cursor-pointer w-full">
                       <span className="block text-sm font-medium text-gray-700">C1 (Critical)</span>
                       <span className="block text-sm text-gray-500">System down or significantly impacted</span>
                     </label>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-center p-2 rounded-md hover:bg-blue-50 transition-colors duration-200">
                     <input
                       id="critical-c2"
                       name="criticalValue"
@@ -502,12 +551,12 @@ const TicketDetail: React.FC = () => {
                       checked={selectedCriticalValue === 'C2'}
                       onChange={() => setSelectedCriticalValue('C2')}
                     />
-                    <label htmlFor="critical-c2" className="ml-3">
+                    <label htmlFor="critical-c2" className="ml-3 cursor-pointer w-full">
                       <span className="block text-sm font-medium text-gray-700">C2 (Major)</span>
                       <span className="block text-sm text-gray-500">Partial feature issue or limited impact</span>
                     </label>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-center p-2 rounded-md hover:bg-blue-50 transition-colors duration-200">
                     <input
                       id="critical-c3"
                       name="criticalValue"
@@ -517,7 +566,7 @@ const TicketDetail: React.FC = () => {
                       checked={selectedCriticalValue === 'C3'}
                       onChange={() => setSelectedCriticalValue('C3')}
                     />
-                    <label htmlFor="critical-c3" className="ml-3">
+                    <label htmlFor="critical-c3" className="ml-3 cursor-pointer w-full">
                       <span className="block text-sm font-medium text-gray-700">C3 (Minor)</span>
                       <span className="block text-sm text-gray-500">Minor problem or inquiry</span>
                     </label>
@@ -530,8 +579,9 @@ const TicketDetail: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCriticalValueForm(false)}
-                  className="hover:bg-gray-100 transition-colors"
+                  className="hover:bg-blue-50 transition-colors duration-300 border-blue-200 flex items-center gap-2"
                 >
+                  <X size={16} />
                   Cancel
                 </Button>
                 <Button
@@ -540,8 +590,9 @@ const TicketDetail: React.FC = () => {
                   size="sm"
                   isLoading={isLoading}
                   disabled={!selectedCriticalValue}
-                  className="bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                  className="bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
                 >
+                  <Save size={16} />
                   Save
                 </Button>
               </div>
@@ -551,9 +602,12 @@ const TicketDetail: React.FC = () => {
 
         {/* Add Action Form (L2/L3) */}
         {showActions && canAddAction() && (
-          <div className="px-6 py-5 border-t border-gray-200 animate-fadeIn">
-            <h4 className="font-medium text-gray-700 mb-3">Add Action</h4>
-            <form onSubmit={handleAddAction}>
+          <div className="px-6 py-5 border-t border-blue-100 animate-fadeIn bg-blue-50">
+            <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+              <PlusCircle className="h-4 w-4 mr-2 text-blue-500" />
+              Add Action
+            </h4>
+            <form onSubmit={handleAddAction} className="bg-white p-4 rounded-md shadow-sm border border-blue-100">
               <div className="mb-4">
                 <label htmlFor="actionType" className="block text-sm font-medium text-gray-700 mb-1">
                   Action
@@ -585,7 +639,8 @@ const TicketDetail: React.FC = () => {
               </div>
 
               <div className="mb-4">
-                <label htmlFor="statusChange" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="statusChange" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <ActivityIcon className="h-4 w-4 mr-2 text-blue-500" />
                   Status Change (Optional)
                 </label>
                 <select
@@ -608,8 +663,9 @@ const TicketDetail: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowActions(false)}
-                  className="hover:bg-gray-100 transition-colors"
+                  className="hover:bg-blue-50 transition-colors duration-300 border-blue-200 flex items-center gap-2"
                 >
+                  <X size={16} />
                   Cancel
                 </Button>
                 <Button
@@ -617,8 +673,9 @@ const TicketDetail: React.FC = () => {
                   variant="primary"
                   size="sm"
                   isLoading={isLoading}
-                  className="bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2"
                 >
+                  <Plus size={16} />
                   Add Action
                 </Button>
               </div>
@@ -628,9 +685,12 @@ const TicketDetail: React.FC = () => {
 
         {/* Resolution Form (L3) */}
         {showResolutionForm && (
-          <div className="px-6 py-5 border-t border-gray-200 animate-fadeIn">
-            <h4 className="font-medium text-gray-700 mb-3">Resolve Ticket</h4>
-            <form onSubmit={handleResolveTicket}>
+          <div className="px-6 py-5 border-t border-blue-100 animate-fadeIn bg-blue-50">
+            <h4 className="font-medium text-blue-700 mb-3 flex items-center">
+              <CheckSquare className="h-4 w-4 mr-2 text-blue-500" />
+              Resolve Ticket
+            </h4>
+            <form onSubmit={handleResolveTicket} className="bg-white p-4 rounded-md shadow-sm border border-blue-100">
               <div className="mb-4">
                 <label htmlFor="resolutionNotes" className="block text-sm font-medium text-gray-700 mb-1">
                   Resolution Notes
@@ -651,8 +711,9 @@ const TicketDetail: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowResolutionForm(false)}
-                  className="hover:bg-gray-100 transition-colors"
+                  className="hover:bg-blue-50 transition-colors duration-300 border-blue-200 flex items-center gap-2"
                 >
+                  <X size={16} />
                   Cancel
                 </Button>
                 <Button
@@ -660,8 +721,9 @@ const TicketDetail: React.FC = () => {
                   variant="success"
                   size="sm"
                   isLoading={isLoading}
-                  className="bg-emerald-600 hover:bg-emerald-700 transition-colors"
+                  className="bg-emerald-600 hover:bg-emerald-700 transition-colors duration-300 flex items-center gap-2"
                 >
+                  <Check size={16} />
                   Resolve Ticket
                 </Button>
               </div>
@@ -670,10 +732,13 @@ const TicketDetail: React.FC = () => {
         )}
 
         {/* Ticket History */}
-        <div className="px-6 py-5 border-t border-gray-200">
+        <div className="px-6 py-5 border-t border-blue-100">
           <div className="flex items-center mb-4">
-            <h4 className="font-medium text-gray-700">Ticket History</h4>
-            <div className="flex-grow border-t border-gray-200 ml-4"></div>
+            <h4 className="font-medium text-blue-700 flex items-center">
+              <History className="h-4 w-4 mr-2 text-blue-500" />
+              Ticket History
+            </h4>
+            <div className="flex-grow border-t border-blue-200 ml-4"></div>
           </div>
 
           {currentTicket.actions && currentTicket.actions.length > 0 ? (
@@ -684,14 +749,14 @@ const TicketDetail: React.FC = () => {
                     <div className="relative pb-8">
                       {actionIdx !== currentTicket.actions?.length! - 1 ? (
                         <span
-                          className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
+                          className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-blue-200"
                           aria-hidden="true"
                         ></span>
                       ) : null}
-                      <div className="relative flex items-start space-x-3">
+                      <div className="relative flex items-start space-x-3 group">
                         <div className="relative">
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center ring-8 ring-white">
-                            <span className="text-sm font-medium text-gray-700">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center ring-8 ring-white group-hover:bg-blue-200 transition-colors duration-300">
+                            <span className="text-sm font-medium text-blue-600">
                               {action.user?.firstName.charAt(0).toUpperCase()}
                             </span>
                           </div>
@@ -699,15 +764,17 @@ const TicketDetail: React.FC = () => {
                         <div className="min-w-0 flex-1">
                           <div>
                             <div className="text-sm">
-                              <span className="font-medium text-gray-900">{action.user?.firstName} {action.user?.lastName}</span>
+                              <span className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-300">{action.user?.firstName} {action.user?.lastName}</span>
                               <span className="ml-2 text-gray-500">({action.user?.role})</span>
                             </div>
-                            <p className="mt-0.5 text-sm text-gray-500">
+                            <p className="mt-0.5 text-sm text-gray-500 flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
                               {format(new Date(action.createdAt), 'PPp')}
                             </p>
                           </div>
-                          <div className="mt-2 bg-gray-50 rounded-md p-3">
-                            <div className="text-sm font-medium text-gray-900 mb-1">
+                          <div className="mt-2 bg-white border border-blue-100 rounded-md p-3 shadow-sm transition-all duration-300 hover:shadow">
+                            <div className="text-sm font-medium text-gray-900 mb-1 flex items-center">
+                              <Activity className="h-4 w-4 mr-2 text-blue-500" />
                               {action.action}
                               {action.newStatus && (
                                 <span className="ml-2">
@@ -727,10 +794,12 @@ const TicketDetail: React.FC = () => {
               </ul>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">No actions have been recorded yet.</p>
+            <div className="text-gray-500 text-center py-8 flex flex-col items-center">
+              <ClipboardList className="h-16 w-16 text-blue-200 mb-2" />
+              <p>No actions have been recorded yet.</p>
+            </div>
           )}
         </div>
-
       </div>
     </Layout>
   );

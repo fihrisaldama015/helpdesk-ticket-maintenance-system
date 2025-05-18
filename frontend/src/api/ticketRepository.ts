@@ -1,7 +1,6 @@
 import type {
   CriticalValue,
   Ticket,
-  TicketAction,
   TicketFilter,
   TicketListResponse,
   TicketStatus

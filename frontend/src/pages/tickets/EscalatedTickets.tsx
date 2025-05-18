@@ -2,7 +2,7 @@ import { AlertTriangle, Filter, Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import StatusBadge from '../../components/ui/StatusBadge';
+import StatusBadge from '../../components/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
 import { CriticalValue, TicketCategory, TicketFilter } from '../../types';
@@ -273,7 +273,7 @@ const EscalatedTickets: React.FC = () => {
               </table>
 
               {/* Pagination */}
-              <div className="py-3 flex items-center justify-between border-t border-gray-200 mt-4">
+              <div className="py-3 px-3 flex items-center justify-between border-t border-gray-200 mt-4">
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
