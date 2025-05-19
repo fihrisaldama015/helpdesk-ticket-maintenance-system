@@ -2,19 +2,29 @@ import { CriticalValue } from "@/types";
 import { AlertCircle, AlertOctagon, AlertTriangle, Loader2, Save, Shield, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { useState } from "react";
+import { Button } from "../ui/button";
+import useTicketStore from "@/store/ticketStore";
 
 interface RadioCriticalValueFormProps {
-  isLoading: boolean;
-  handleSetCriticalValue: (e: React.FormEvent, selectedCriticalValue: CriticalValue) => Promise<void>;
+  ticketId: string | undefined;
   setShowCriticalValueForm: (show: boolean) => void;
 }
 
 const RadioCriticalValueForm = ({
-  isLoading,
-  handleSetCriticalValue,
+  ticketId,
+  setShowCriticalValueForm,
 }: RadioCriticalValueFormProps) => {
+  const { setCriticalValue, isLoading } = useTicketStore();
   const [selectedCriticalValue, setSelectedCriticalValue] = useState<CriticalValue>("NONE");
-
+  const handleSetCriticalValue = async (e: React.FormEvent, selectedCriticalValue: CriticalValue) => {
+    e.preventDefault();
+    if (ticketId && selectedCriticalValue) {
+      const success = await setCriticalValue(ticketId, selectedCriticalValue);
+      if (success) {
+        setShowCriticalValueForm(false);
+      }
+    }
+  };
   return (
     <div className="px-6 py-5 border-t border-blue-100 animate-fadeIn bg-blue-50">
       <h4 className="font-medium text-blue-700 mb-4 flex items-center">
@@ -102,17 +112,20 @@ const RadioCriticalValueForm = ({
         </div>
 
         <div className="flex justify-end space-x-3 pt-2">
-          <button
-            type="button"
-            className="px-4 py-2 rounded-md text-sm font-medium border border-blue-200 text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 flex items-center gap-2"
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCriticalValueForm(false)}
+            className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 transition-all"
           >
             <X size={16} />
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            size="sm"
             onClick={(e) => handleSetCriticalValue(e, selectedCriticalValue)}
-            disabled={!selectedCriticalValue || isLoading}
-            className="px-4 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 flex items-center gap-2 disabled:opacity-70"
+            disabled={selectedCriticalValue === 'NONE' || isLoading}
+            className="bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white transition-all"
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -120,7 +133,7 @@ const RadioCriticalValueForm = ({
               <Save size={16} />
             )}
             {isLoading ? "Saving..." : "Save"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

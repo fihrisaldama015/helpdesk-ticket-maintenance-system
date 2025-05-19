@@ -1,4 +1,4 @@
-import React from 'react';
+import { User } from '@/types';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Layout from '../../../components/layout/Layout';
@@ -10,27 +10,30 @@ jest.mock('../../../store/authStore', () => ({
   default: jest.fn(),
 }));
 
-// Mock the useNavigate hook
+// Mock useNavigate and useLocation
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => jest.fn(),
   useLocation: () => ({ pathname: '/' }),
 }));
 
+const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
+
 describe('Layout Component', () => {
-  const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
+  const baseUser: User = {
+    id: '1',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test@example.com',
+    role: 'L1_AGENT',
+  };
 
   beforeEach(() => {
+    jest.clearAllMocks();
     mockUseAuthStore.mockReturnValue({
       isAuthenticated: true,
-      user: {
-        id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
-        role: 'L1',
-      },
+      user: baseUser as User,
       isLoading: false,
-      error: null,
       login: jest.fn(),
       register: jest.fn(),
       logout: jest.fn(),
@@ -39,68 +42,92 @@ describe('Layout Component', () => {
     });
   });
 
-  it('renders children when no auth is required', () => {
-    render(
-      <BrowserRouter>
-        <Layout>
-          <div data-testid="test-content">Test Content</div>
-        </Layout>
-      </BrowserRouter>
-    );
+  const renderWithRouter = (ui: React.ReactNode) => {
+    return render(<BrowserRouter>{ui}</BrowserRouter>);
+  };
 
+  it('renders children normally (no auth required)', () => {
+    renderWithRouter(
+      <Layout>
+        <div data-testid="test-content">Test Content</div>
+      </Layout>
+    );
     expect(screen.getByTestId('test-content')).toBeInTheDocument();
   });
 
-  it('renders loading spinner when loading', () => {
+  it('shows loading state if auth is loading', () => {
     mockUseAuthStore.mockReturnValue({
       ...mockUseAuthStore(),
       isLoading: true,
     });
 
-    render(
-      <BrowserRouter>
-        <Layout requireAuth>
-          <div>Test Content</div>
-        </Layout>
-      </BrowserRouter>
+    renderWithRouter(
+      <Layout requireAuth>
+        <div>Test Content</div>
+      </Layout>
     );
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
-  it('renders children when auth is required and user is authenticated', () => {
-    render(
-      <BrowserRouter>
-        <Layout requireAuth>
-          <div data-testid="test-content">Test Content</div>
-        </Layout>
-      </BrowserRouter>
+  it('redirects to login if not authenticated and auth is required', () => {
+    mockUseAuthStore.mockReturnValue({
+      ...mockUseAuthStore(),
+      isAuthenticated: false,
+      isLoading: false,
+    });
+
+    renderWithRouter(
+      <Layout requireAuth>
+        <div>Should not render</div>
+      </Layout>
     );
 
-    expect(screen.getByTestId('test-content')).toBeInTheDocument();
+    expect(screen.queryByText('Should not render')).not.toBeInTheDocument();
   });
 
-  it('renders children when user has required role', () => {
-    render(
-      <BrowserRouter>
-        <Layout requireAuth allowedRoles={['L1']}>
-          <div data-testid="test-content">Test Content</div>
-        </Layout>
-      </BrowserRouter>
+  it('renders children if authenticated and auth is required', () => {
+    renderWithRouter(
+      <Layout requireAuth>
+        <div data-testid="protected-content">Protected</div>
+      </Layout>
     );
 
-    expect(screen.getByTestId('test-content')).toBeInTheDocument();
+    expect(screen.getByTestId('protected-content')).toBeInTheDocument();
   });
 
-  it('includes footer with copyright notice', () => {
-    render(
-      <BrowserRouter>
-        <Layout>
-          <div>Test Content</div>
-        </Layout>
-      </BrowserRouter>
+  it('redirects to unauthorized if role is not allowed', () => {
+    mockUseAuthStore.mockReturnValue({
+      ...mockUseAuthStore(),
+      user: { ...baseUser, role: 'L2_AGENT' },
+    });
+
+    renderWithRouter(
+      <Layout requireAuth allowedRoles={['L1_AGENT']}>
+        <div>Blocked Content</div>
+      </Layout>
     );
 
-    expect(screen.getByText(/© \d{4} HelpDesk Ticket System/)).toBeInTheDocument();
+    expect(screen.queryByText('Blocked Content')).not.toBeInTheDocument();
+  });
+
+  it('renders children if user has allowed role', () => {
+    renderWithRouter(
+      <Layout requireAuth allowedRoles={['L1_AGENT']}>
+        <div data-testid="role-content">Role Content</div>
+      </Layout>
+    );
+
+    expect(screen.getByTestId('role-content')).toBeInTheDocument();
+  });
+
+  it('renders footer copyright', () => {
+    renderWithRouter(
+      <Layout>
+        <div />
+      </Layout>
+    );
+
+    expect(screen.getByText(/© \d{4} HelpDesk Ticket Maintenance System/)).toBeInTheDocument();
   });
 });

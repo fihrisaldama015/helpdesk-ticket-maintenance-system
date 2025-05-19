@@ -1,12 +1,12 @@
-import React from 'react';
+import { LogOut, Menu, TicketIcon, User } from 'lucide-react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { TicketIcon, LogOut, User, Menu } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import Button from '../Button';
 
 const Navbar: React.FC = () => {
   const { user, isLoading, logout, isAuthenticated } = useAuthStore();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -62,10 +62,13 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Desktop user controls */}
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+          <div className="hidden sm:ml-6 sm:flex sm:items-center" data-testid="desktop-user-controls">
             {isUserLoaded ? (
               <div className="flex items-center space-x-4">
-                <div className="text-sm font-medium text-gray-700 bg-white ring-1 ring-gray-200 py-1 px-3 rounded-full shadow-sm animate-fadeIn">
+                <div 
+                  data-testid="desktop-user-info" 
+                  className="text-sm font-medium text-gray-700 bg-white ring-1 ring-gray-200 py-1 px-3 rounded-full shadow-sm animate-fadeIn"
+                >
                   {user?.firstName} {user?.lastName} <span className="text-blue-600 font-semibold">({user?.role})</span>
                 </div>
                 <Button
@@ -107,11 +110,11 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Mobile menu with animation */}
-      <div 
-        className={`sm:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`} 
+      <div
+        className={`sm:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
         id="mobile-menu"
       >
-        <div className="pt-2 pb-3 space-y-1">
+        <nav role="navigation" data-testid="mobile-navigation" className="pt-2 pb-3 space-y-1">
           {isUserLoaded ? (
             <>
               <Link
@@ -145,8 +148,18 @@ const Navbar: React.FC = () => {
                     <User className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">{user?.firstName} {user?.lastName}</div>
-                    <div className="text-sm font-medium text-blue-600">{user?.role.replace('_', ' ')}</div>
+                    <div 
+                      data-testid="mobile-user-name" 
+                      className="text-base font-medium text-gray-800"
+                    >
+                      {user?.firstName} {user?.lastName}
+                    </div>
+                    <div 
+                      data-testid="mobile-user-role" 
+                      className="text-sm font-medium text-blue-600"
+                    >
+                      {user?.role.replace('_', ' ')}
+                    </div>
                   </div>
                 </div>
                 <div className="mt-3 space-y-1">
@@ -180,7 +193,7 @@ const Navbar: React.FC = () => {
               </Link>
             </div>
           )}
-        </div>
+        </nav>
       </div>
     </nav>
   );

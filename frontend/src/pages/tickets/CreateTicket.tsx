@@ -1,3 +1,4 @@
+import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -6,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AlertCircle, ArrowRight, Calendar as CalendarIcon, FileText, Loader, Tag, X } from 'lucide-react';
@@ -17,7 +17,6 @@ import Layout from '../../components/layout/Layout';
 import useTicketStore from '../../store/ticketStore';
 import { TicketCategory, TicketPriority } from '../../types';
 
-// Form input types
 interface CreateTicketFormInputs {
   title: string;
   description: string;
@@ -29,7 +28,7 @@ interface CreateTicketFormInputs {
 const CreateTicket: React.FC = () => {
   const navigate = useNavigate();
   const { createTicket, isLoading, error } = useTicketStore();
-  const [showError, setShowError] = useState(false);
+  const [showError, setShowError] = useState<boolean>(false);
   const [formData, setFormData] = useState<CreateTicketFormInputs>({
     title: '',
     description: '',
@@ -85,7 +84,6 @@ const CreateTicket: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Clear error for this field when user starts typing
     if (formErrors[name as keyof CreateTicketFormInputs]) {
       setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -120,7 +118,6 @@ const CreateTicket: React.FC = () => {
     }
   };
 
-  // Get priority icon
   const getPriorityIcon = (priority: TicketPriority) => {
     switch (priority) {
       case 'LOW':

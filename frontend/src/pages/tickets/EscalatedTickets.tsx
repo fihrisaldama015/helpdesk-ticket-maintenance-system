@@ -11,22 +11,17 @@ const EscalatedTickets: React.FC = () => {
   const { user } = useAuthStore();
   const { tickets, isLoading, getEscalatedTickets, setFilters, filters } = useTicketStore();
 
-  // Filter states
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   const [criticalValueFilter, setCriticalValueFilter] = useState<CriticalValue[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<TicketCategory[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    // Initial load of escalated tickets
     getEscalatedTickets();
   }, [getEscalatedTickets]);
-
-  // Category filter handler is no longer needed as we're using select dropdowns now
 
   const applyFilters = () => {
     const newFilters: TicketFilter = {
@@ -50,10 +45,8 @@ const EscalatedTickets: React.FC = () => {
     getEscalatedTickets({});
   };
 
-  // Handle pagination
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Update filter with new page
     const newFilters = { ...filters, page };
     setFilters(newFilters);
     getEscalatedTickets(newFilters);
@@ -87,7 +80,6 @@ const EscalatedTickets: React.FC = () => {
         >
           <div className="p-6 bg-gradient-to-b from-blue-50 to-white border-b border-gray-200 transform transition-all duration-500">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {/* Critical Value Filter */}
               <div className="transform transition-all duration-500 hover:shadow-md p-4 rounded-lg hover:bg-white">
                 <label className="block text-sm font-semibold text-blue-700 mb-3">
                   Critical Value
@@ -116,7 +108,6 @@ const EscalatedTickets: React.FC = () => {
                 </div>
               </div>
 
-              {/* Category Filter */}
               <div className="transform transition-all duration-500 hover:shadow-md p-4 rounded-lg hover:bg-white">
                 <label className="block text-sm font-semibold text-blue-700 mb-3">
                   Category
@@ -165,7 +156,6 @@ const EscalatedTickets: React.FC = () => {
                 </div>
               </div>
 
-              {/* Search Filter */}
               <div className="transform transition-all duration-500 hover:shadow-md p-4 rounded-lg hover:bg-white">
                 <label className="block text-sm font-semibold text-blue-700 mb-3">
                   Search

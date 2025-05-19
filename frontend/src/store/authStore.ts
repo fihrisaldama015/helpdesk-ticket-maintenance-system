@@ -25,8 +25,6 @@ const useAuthStore = create<AuthState>((set, _) => ({
 
     try {
       const response = await authRepository.login(email, password);
-      console.log('Login response', response);
-
       localStorage.setItem('token', response.token);
       set({
         user: response.user,
@@ -35,7 +33,6 @@ const useAuthStore = create<AuthState>((set, _) => ({
       });
       return true;
     } catch (error: any) {
-      console.error('Login error:', error);
       set({
         isLoading: false,
         error: error.message || 'Login failed. Please try again.',
@@ -76,10 +73,8 @@ const useAuthStore = create<AuthState>((set, _) => ({
   },
 
   loadUser: async () => {
-    console.log('[loadUser] loaded')
     const token = localStorage.getItem('token');
     if (!token) {
-      console.log('[loadUser] no token')
       set({
         user: null,
         isAuthenticated: false,
@@ -92,7 +87,6 @@ const useAuthStore = create<AuthState>((set, _) => ({
 
     try {
       const response = await authRepository.getCurrentUser();
-      console.log('[loadUser] user', response)
       set({
         user: response,
         isAuthenticated: true,

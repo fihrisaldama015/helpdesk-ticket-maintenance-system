@@ -1,23 +1,41 @@
-import { ArrowUpCircle, X } from "lucide-react";
+import { ArrowUpCircle, Loader2, X } from "lucide-react";
 import { useState } from "react";
-import Button from "../Button";
+import { Button } from "../ui/button";
+import useTicketStore from "@/store/ticketStore";
 
 interface EscalationFormProps {
-  isLoading: boolean;
+  ticketId: string | undefined;
   canEscalateToL2: () => boolean;
   setShowEscalationForm: (show: boolean) => void;
-  handleEscalateToL2: (e: React.FormEvent, escalationNotes: string) => void;
-  handleEscalateToL3: (e: React.FormEvent, escalationNotes: string) => void;
 }
 
 const EscalationForm: React.FC<EscalationFormProps> = ({
-  isLoading,
+  ticketId,
   canEscalateToL2,
   setShowEscalationForm,
-  handleEscalateToL2,
-  handleEscalateToL3,
 }) => {
+  const { currentTicket, isLoading } = useTicketStore();
+  const { escalateToL2, escalateToL3 } = useTicketStore();
   const [escalationNotes, setEscalationNotes] = useState<string>('');
+
+  const handleEscalateToL2 = async (e: React.FormEvent, escalationNotes: string) => {
+    e.preventDefault();
+    if (ticketId && escalationNotes.trim()) {
+      const success = await escalateToL2(ticketId, escalationNotes);
+      if (success) {
+        setShowEscalationForm(false);
+      }
+    }
+  };
+  const handleEscalateToL3 = async (e: React.FormEvent, escalationNotes: string) => {
+    e.preventDefault();
+    if (ticketId && escalationNotes.trim() && currentTicket) {
+      const success = await escalateToL3(ticketId, escalationNotes, currentTicket.criticalValue || "NONE");
+      if (success) {
+        setShowEscalationForm(false);
+      }
+    }
+  };
   return (
     <div className="px-6 py-5 border-t border-blue-100 animate-fadeIn bg-blue-50">
       <h4 className="font-medium text-blue-700 mb-3 flex items-center">
@@ -41,22 +59,21 @@ const EscalationForm: React.FC<EscalationFormProps> = ({
         </div>
         <div className="flex justify-end space-x-3">
           <Button
-            type="button"
             variant="outline"
             size="sm"
             onClick={() => setShowEscalationForm(false)}
-            className="hover:bg-blue-50 transition-colors duration-300 border-blue-200 flex items-center gap-2"
+            className="hover:bg-red-50 transition-all border-red-200 text-red-600 hover:text-red-700"
           >
             <X size={16} />
             Cancel
           </Button>
           <Button
             type="submit"
-            variant={canEscalateToL2() ? "warning" : "danger"}
             size="sm"
-            isLoading={isLoading}
-            className={`${canEscalateToL2() ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-600 hover:bg-red-700'} transition-colors duration-300 flex items-center gap-2`}
+            disabled={isLoading || !escalationNotes}
+            className={`${canEscalateToL2() ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-600 hover:bg-red-700'} transition-all`}
           >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <ArrowUpCircle size={16} />
             Escalate
           </Button>

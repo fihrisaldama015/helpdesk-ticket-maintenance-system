@@ -12,27 +12,58 @@ jest.mock('../../api/authRepository', () => ({
 
 describe('authStore', () => {
   beforeEach(() => {
-    // Clear all mocks before each test
+    // Clear and reset all mocks
     jest.clearAllMocks();
-    // Reset the store state
-    useAuthStore.getState().logout();
+    jest.resetAllMocks();
+    
+    // Reset localStorage mock
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: jest.fn().mockReturnValue(null),
+        setItem: jest.fn(),
+        removeItem: jest.fn()
+      }
+    });
+
+    // Reset auth store state
+    const store = useAuthStore.getState();
+    store.logout();
+    store.clearError();
+    
+    // Reset auth repository mocks
+    (authRepository.login as jest.Mock).mockReset();
+    (authRepository.register as jest.Mock).mockReset();
+    (authRepository.getCurrentUser as jest.Mock).mockReset();
+    (authRepository.logout as jest.Mock).mockReset();
+
+    // Reset mock implementations
+    (authRepository.login as jest.Mock).mockImplementation(() => Promise.resolve({
+      user: null,
+      token: 'test-token'
+    }));
+    
+    (authRepository.register as jest.Mock).mockImplementation(() => Promise.resolve({
+      user: null,
+      token: 'test-token'
+    }));
+    
+    (authRepository.getCurrentUser as jest.Mock).mockImplementation(() => Promise.resolve(null));
+    
+    (authRepository.logout as jest.Mock).mockImplementation(() => {});
   });
 
   describe('login', () => {
     it('successfully logs in a user', async () => {
       const mockUser = {
         id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
-        role: 'L1' as const,
+        name: 'Helpdesk Agent',
+        email: 'agent@helpdesk.com',
+        role: 'L1_AGENT',
       };
 
       const mockResponse = {
-        success: true,
-        data: {
-          user: mockUser,
-          token: 'test-token',
-        },
+        user: mockUser,
+        token: 'test-token',
       };
 
       (authRepository.login as jest.Mock).mockResolvedValue(mockResponse);
@@ -40,7 +71,7 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        const success = await result.current.login('test@example.com', 'password');
+        const success = await result.current.login('agent@helpdesk.com', 'agent123');
         expect(success).toBe(true);
       });
 
@@ -50,13 +81,9 @@ describe('authStore', () => {
     });
 
     it('handles login failure', async () => {
-      const mockError = 'Invalid credentials';
-      const mockResponse = {
-        success: false,
-        error: mockError,
-      };
+      const mockError = new Error('Invalid credentials');
 
-      (authRepository.login as jest.Mock).mockResolvedValue(mockResponse);
+      (authRepository.login as jest.Mock).mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useAuthStore());
 
@@ -67,7 +94,7 @@ describe('authStore', () => {
 
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.user).toBeNull();
-      expect(result.current.error).toBe(mockError);
+      expect(result.current.error).toBe(mockError.message);
     });
   });
 
@@ -77,15 +104,12 @@ describe('authStore', () => {
         id: '1',
         name: 'New User',
         email: 'new@example.com',
-        role: 'L1' as const,
+        role: 'L1',
       };
 
       const mockResponse = {
-        success: true,
-        data: {
-          user: mockUser,
-          token: 'test-token',
-        },
+        user: mockUser,
+        token: 'test-token',
       };
 
       (authRepository.register as jest.Mock).mockResolvedValue(mockResponse);
@@ -93,7 +117,7 @@ describe('authStore', () => {
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        const success = await result.current.register('New User', 'new@example.com', 'password', 'L1');
+        const success = await result.current.register('New', 'User', 'new@example.com', 'password', 'L1');
         expect(success).toBe(true);
       });
 
@@ -103,24 +127,20 @@ describe('authStore', () => {
     });
 
     it('handles registration failure', async () => {
-      const mockError = 'Email already exists';
-      const mockResponse = {
-        success: false,
-        error: mockError,
-      };
+      const mockError = new Error('Email already exists');
 
-      (authRepository.register as jest.Mock).mockResolvedValue(mockResponse);
+      (authRepository.register as jest.Mock).mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useAuthStore());
 
       await act(async () => {
-        const success = await result.current.register('New User', 'existing@example.com', 'password', 'L1');
+        const success = await result.current.register('New', 'User', 'existing@example.com', 'password', 'L1');
         expect(success).toBe(false);
       });
 
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.user).toBeNull();
-      expect(result.current.error).toBe(mockError);
+      expect(result.current.error).toBe(mockError.message);
     });
   });
 
@@ -130,33 +150,35 @@ describe('authStore', () => {
         id: '1',
         name: 'Current User',
         email: 'current@example.com',
-        role: 'L1' as const,
-      };
-
-      const mockResponse = {
-        success: true,
-        data: mockUser,
+        role: 'L1',
       };
 
       // Mock localStorage.getItem
-      Storage.prototype.getItem = jest.fn(() => 'test-token');
-      
-      (authRepository.getCurrentUser as jest.Mock).mockResolvedValue(mockResponse);
+      localStorage.getItem = jest.fn().mockReturnValue('test-token');
+
+      (authRepository.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
       const { result } = renderHook(() => useAuthStore());
 
+      // First get the initial state
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.user).toBeNull();
+      expect(result.current.error).toBeNull();
+
+      // Load the user
       await act(async () => {
         const success = await result.current.loadUser();
         expect(success).toBe(true);
       });
 
+      // Verify final state
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.user).toEqual(mockUser);
       expect(result.current.error).toBeNull();
+      expect(localStorage.getItem('token')).toBe('test-token');
     });
 
     it('handles missing token', async () => {
-      // Mock localStorage.getItem to return null
       Storage.prototype.getItem = jest.fn(() => null);
 
       const { result } = renderHook(() => useAuthStore());
@@ -168,6 +190,32 @@ describe('authStore', () => {
 
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.user).toBeNull();
+    });
+
+    it('handles loadUser failure', async () => {
+      localStorage.getItem = jest.fn().mockReturnValue('test-token');
+
+      const mockError = new Error('Failed to load user');
+      (authRepository.getCurrentUser as jest.Mock).mockRejectedValue(mockError);
+
+      const { result } = renderHook(() => useAuthStore());
+
+      // First check initial state
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.user).toBeNull();
+      expect(result.current.error).toBeNull();
+
+      // Try to load user and expect failure
+      await act(async () => {
+        const success = await result.current.loadUser();
+        expect(success).toBe(false);
+      });
+
+      // Verify final state
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.user).toBeNull();
+      expect(result.current.error).toBe('Failed to load user');
+      expect(localStorage.getItem('token')).toBe('test-token'); // token is kept even on failure
     });
   });
 
@@ -189,13 +237,10 @@ describe('authStore', () => {
     it('clears the error state', async () => {
       const { result } = renderHook(() => useAuthStore());
 
-      // Set an error first
+      // Force an error state first by rejecting login
       await act(async () => {
-        const mockResponse = {
-          success: false,
-          error: 'Test error',
-        };
-        (authRepository.login as jest.Mock).mockResolvedValue(mockResponse);
+        const mockError = new Error('Test error');
+        (authRepository.login as jest.Mock).mockRejectedValue(mockError);
         await result.current.login('test@example.com', 'wrong-password');
       });
 
