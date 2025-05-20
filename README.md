@@ -1,15 +1,29 @@
 # Helpdesk Ticket Maintenance System
 
-A full-stack web application for managing helpdesk tickets with multi-level support escalation (L1-L3), inspired by Jira. This system allows users to open, track, manage, and escalate support tickets through a structured workflow.
+This is a full-stack web application for managing helpdesk tickets with multi-level support escalation (L1-L3), inspired by Jira. This system allows users to open, track, manage, and escalate support tickets through a structured workflow.
+
+### Owner:
+Muhamad Fihris Aldama (fihrisaldama015@gmail.com)
 
 ## Tech Stack
 
-- Express.js (Node.js framework)
+### Frontend
+- React 18 (Vite)
 - TypeScript
-- PostgreSQL (Database)
-- Prisma (ORM)
+- Tailwind CSS for styling
+- React Router for navigation
+- Axios for API requests
+- React Hook Form for form handling
+- Zustand for state management
+- Jest & Testing Library for testing
+
+### Backend
+- Express.js with TypeScript
+- PostgreSQL database
+- Prisma ORM
 - JWT Authentication
-- Jest (Testing)
+- RESTful API design
+- Jest & Supertest for testing
 
 ## Features
 
@@ -23,14 +37,12 @@ A full-stack web application for managing helpdesk tickets with multi-level supp
   - View and manage escalated tickets
   - Assign critical values (C1, C2, C3)
   - Add actions and update ticket logs
-  - Update ticket status (all status types)
-  - Complete and resolve C3 tickets
+  - Complete a ticket if resolved
   - Escalate tickets to L3 if unresolved (only C1 and C2 tickets)
 
 - **Advanced Support (L3)**
   - Handle only escalated critical tickets (C1 and C2)
   - Add resolution notes and mark tickets as RESOLVED
-  - Update ticket status (all status types)
 
 ### Ticket Management
 - **Ticket Creation**: Title, description, category, priority, expected completion date
@@ -39,10 +51,11 @@ A full-stack web application for managing helpdesk tickets with multi-level supp
   2. L1 Agent works on ticket (status: ATTENDING)
   3. If resolved by L1: mark as COMPLETED
   4. If unresolved: escalate to L2 (status: ESCALATED_L2)
-  5. L2 Support assigns critical value and works on ticket
-  6. For C3 tickets: L2 can resolve and mark as COMPLETED
-  7. For C1/C2 tickets: if unresolved, escalate to L3 (status: ESCALATED_L3)
-  8. L3 Support provides final resolution for C1/C2 tickets (status: RESOLVED)
+  5. L2 Support assigns critical value and works on ticket (status: ATTENDING)
+  6. L2 can solve and mark as COMPLETED
+  7. for C1/C2 tickets: If unresolved: escalate to L3 (status: ESCALATED_L3)
+  8. L3 Support works on ticket (status: ATTENDING)
+  9. L3 Support provides final resolution for C1/C2 tickets (status: RESOLVED)
 
 - **Status Types**:
   - NEW: Initial state when ticket is created
@@ -61,20 +74,21 @@ A full-stack web application for managing helpdesk tickets with multi-level supp
 - **C3**: Low - Minor problem or inquiry
 
 ### Additional Features
-- **Ticket Filtering**: By status, priority, and escalation level
-- **Action Logging**: Track all actions taken on tickets
+- **Ticket Filtering**: By status, priority, category, and escalation level
+- **Action Logging**: Track all actions taken on tickets (only for L2 and L3)
 - **Escalation Workflow**: Structured path from L1 → L2 → L3
 
 ## Setup Instructions
 
 ### Prerequisites
-- Node.js (v16+)
-- npm or yarn
+my specific system configuration is as follows:
+- Node.js (v22.14.0)
+- npm (v10.9.2) or yarn (1.22.22)
 - PostgreSQL (v13+)
 
-### Installation
+### Clone the Repository
 
-1. Clone the repository
+1. Clone the repository:
 ```bash
 # Using SSH
 git clone git@github.com:fihrisaldama015/helpdesk-ticket-maintenance-system.git
@@ -85,8 +99,12 @@ git clone https://github.com/fihrisaldama015/helpdesk-ticket-maintenance-system.
 cd helpdesk-ticket-maintenance-system
 ```
 
-2. Install dependencies
+### Backend Setup
+
+1. Navigate to the backend directory and install dependencies:
 ```bash
+cd backend
+
 # Using npm
 npm install
 
@@ -94,118 +112,147 @@ npm install
 yarn install
 ```
 
-3. Environment Variables
+2. Set up environment variables:
+   - Create a `.env` file in the backend directory with the following content:
+   ```
+   # Server configuration
+   PORT=5000
+   NODE_ENV=development
 
-Create a `.env` file in the root directory with the following variables:
+   # Database connection
+   DATABASE_URL="postgresql://postgres:@localhost:5432/ticket_maintenance"
 
-```
-# Server configuration
-PORT=5000
-NODE_ENV=development
+   # Authentication
+   JWT_SECRET=your_jwt_secret_key
+   JWT_EXPIRATION=24h
+   ```
+   - For testing, create a `.env.test` file:
+   ```
+   DATABASE_URL="postgresql://postgres:@localhost:5432/ticket_maintenance_test"
+   ```
 
-# Database connection
-DATABASE_URL="postgresql://postgres:@localhost:5432/ticket_maintenance"
+3. Database Setup:
+   - Create PostgreSQL databases:
+   ```sql
+   CREATE DATABASE ticket_maintenance;
+   CREATE DATABASE ticket_maintenance_test;
+   ```
+   - Run database migrations:
+   ```bash
+   # Using npm
+   npm run migrate
+   # Using yarn
+   yarn migrate
+   ```
+   - Seed the database with sample users:
+   ```bash
+   # Using npm
+   npm run seed
+   # Using yarn
+   yarn seed
+   ```
 
-# Authentication
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRATION=24h
-```
+4. Running the Backend:
+   - Development mode:
+     ```bash
+     # Using npm
+     npm run dev
+     # Using yarn
+     yarn dev
+     ```
+   - Production mode:
+     ```bash
+     # Build and start
+     npm run build
+     npm start
+     # or with yarn
+     yarn build
+     yarn start
+     ```
+   The server will be available at http://localhost:5000
 
-For testing, create a `.env.test` file:
+5. Running Tests:
+   ```bash
+   # Run database migrations for testing
+   npm run migrate:test
+   # or
+   yarn migrate:test
 
-```
-DATABASE_URL="postgresql://postgres:@localhost:5432/ticket_maintenance_test"
-```
+   # Run tests
+   npm test
+   # or
+   yarn test
+   ```
 
-### Database Setup
+### Frontend Setup
 
-1. Create PostgreSQL databases for development and testing:
-```sql
-CREATE DATABASE ticket_maintenance;
-CREATE DATABASE ticket_maintenance_test;
-```
+1. Navigate to the frontend directory:
+   - If you're currently in the `backend` directory, go up one level and then into frontend:
+     ```bash
+     cd ../frontend
+     ```
+   - If you're in the project root directory, simply run:
+     ```bash
+     cd frontend
+     ```
+   - To verify you're in the right place, you should see files like `package.json` and the `src` directory
 
-2. Run database migrations:
+2. Install dependencies:
 ```bash
 # Using npm
-npm run migrate
+npm install
 
-# Using yarn
-yarn migrate
+# or using yarn
+yarn install
 ```
 
-3. Seed the database with sample users:
-```bash
-# Using npm
-npm run seed
-
-# Using yarn
-yarn seed
+2. Create a `.env` file in the frontend directory:
+```
+VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
-4. (Optional) Explore the database with Prisma Studio:
+3. Start the development server:
 ```bash
-# Using npm
-npm run studio
-
-# Using yarn
-yarn studio
-```
-
-### Running Tests
-
-1. Run database migrations for testing:
-```bash
-# Using npm
-npm run migrate:test
-
-# Using yarn
-yarn migrate:test
-```
-
-2. (Optional) Seed the test database with sample users:
-```bash
-# Using npm
-npm run seed:test
-
-# Using yarn
-yarn seed:test
-```
-
-3. Run tests:
-```bash
-# Using npm
-npm test        # Run all tests
-npm run test:watch  # Run tests in watch mode
-
-# Using yarn
-yarn test       # Run all tests
-yarn test:watch # Run tests in watch mode
-```
-
-### Running the Application
-
-```bash
-# Development mode
 # Using npm
 npm run dev
-
+# or
 # Using yarn
 yarn dev
 ```
+The frontend will be available at http://localhost:5173
 
-The server will start on http://localhost:5000
-
+4. Running Tests:
 ```bash
-# Production mode
-# Using npm
-npm run build
-npm start
+# Run all tests
+npm test
+# or
+yarn test
 
-# Using yarn
-yarn build
-yarn start
+# Run tests in watch mode
+npm run test:watch
+# or
+yarn test:watch
+
+# Generate test coverage report
+npm run test:coverage
+# or
+yarn test:coverage
 ```
+
+5. Building for Production:
+```bash
+# Create a production build
+npm run build
+# or
+yarn build
+
+# Preview the production build locally
+npm run preview
+# or
+yarn preview
+```
+
+The production build will be available in the `dist` directory.
 
 ## Sample Credentials
 
@@ -263,31 +310,50 @@ All ticket routes require authentication.
 
 ```
 ticket_maintenance/
-├── src/                     # Backend source code
-│   ├── config/              # Configuration files
-│   ├── controllers/         # Route controllers
-│   ├── middlewares/         # Express middlewares
-│   ├── models/              # Data models
-│   ├── routes/              # API routes
-│   ├── services/            # Business logic
-│   ├── app.ts               # Express app setup
-│   └── server.ts            # Server entry point
-├── tests/                   # Test files
-│   ├── controllers/         # Controller tests
-│   ├── middlewares/         # Middleware tests
-│   ├── services/            # Service tests
-│   └── setup.ts             # Test setup file
-├── prisma/                  # Database ORM
-│   ├── migrations/          # Database migrations
-│   └── schema.prisma        # Database schema
-├── dist/                    # Compiled JavaScript
-├── node_modules/            # Dependencies
-├── .env                     # Environment variables
-├── .env.test                # Test environment variables
-├── jest.config.ts           # Jest configuration
-├── package.json             # Project metadata
-├── tsconfig.json            # TypeScript configuration
-└── yarn.lock                # Yarn lockfile
+├── frontend/               # Frontend React application
+│   ├── public/             # Static files
+│   ├── src/                # Source code
+│   │   ├── __tests__/      # Frontend test files
+│   │   ├── assets/         # Images, fonts, etc.
+│   │   ├── components/     # Reusable UI components
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API service layer
+│   │   ├── types/          # TypeScript type definitions
+│   │   ├── utils/          # Utility functions
+│   │   ├── App.tsx         # Main App component
+│   │   ├── main.tsx        # Application entry point
+│   │   └── setupTests.ts   # Test setup configuration
+│   ├── .env                # Frontend environment variables
+│   ├── index.html          # HTML template
+│   ├── package.json        # Frontend dependencies
+│   ├── postcss.config.js   # PostCSS configuration
+│   ├── tailwind.config.js  # Tailwind CSS configuration
+│   └── tsconfig.json       # TypeScript configuration
+├── backend/                # Backend source code
+│   ├── src/                # Source code
+│   │   ├── config/         # Configuration files
+│   │   ├── controllers/    # Route controllers
+│   │   ├── middlewares/    # Express middlewares
+│   │   ├── models/         # Data models
+│   │   ├── routes/         # API routes
+│   │   ├── services/       # Business logic
+│   │   ├── app.ts          # Express app setup
+│   │   └── server.ts       # Server entry point
+│   ├── tests/              # Test files
+│   │   ├── controllers/    # Controller tests
+│   │   ├── middlewares/    # Middleware tests
+│   │   ├── services/       # Service tests
+│   │   └── setup.ts        # Test setup file
+│   ├── prisma/             # Database ORM
+│   │   ├── migrations/     # Database migrations
+│   │   └── schema.prisma   # Database schema
+│   ├── .env                # Environment variables
+│   ├── .env.test           # Test environment variables
+│   ├── jest.config.ts      # Jest configuration
+│   ├── package.json        # Backend dependencies
+│   ├── tsconfig.json       # TypeScript configuration
+│   └── yarn.lock           # Yarn lockfile
 ```
 
 ## License
