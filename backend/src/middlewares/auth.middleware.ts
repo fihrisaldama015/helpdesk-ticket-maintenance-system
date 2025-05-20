@@ -9,6 +9,8 @@ declare global {
       user?: {
         id: string;
         email: string;
+        firstName: string;
+        lastName: string;
         role: UserRole;
       };
     }
@@ -28,6 +30,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       email: string;
+      firstName: string;
+      lastName: string;
       role: UserRole;
     };
     const user = await prisma.user.findUnique({
@@ -40,6 +44,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     req.user = {
       id: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role as UserRole,
     };
     next();

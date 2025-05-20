@@ -2,7 +2,7 @@ import { Filter, PlusCircle, Search, AlertTriangle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 import StatusBadge from '../../components/StatusBadge';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
@@ -126,11 +126,11 @@ const TicketList: React.FC = () => {
               {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
             {user?.role === 'L1_AGENT' && (
-              <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
+              <Link to="/tickets/create" className="transform hover:scale-105 active:scale-95 transition-all">
                 <Button
-                  leftIcon={<PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />}
-                  className="group hover:shadow-md transition-all duration-200"
+                  className="group transition-all bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                 >
+                  <PlusCircle size={16} className="group-hover:rotate-90" />
                   New Ticket
                 </Button>
               </Link>
@@ -277,10 +277,9 @@ const TicketList: React.FC = () => {
 
                 <div className="mt-4 flex space-x-2">
                   <Button
-                    variant="primary"
                     size="sm"
                     onClick={applyFilters}
-                    className="transform hover:scale-105 transition-transform duration-200 hover:shadow-md"
+                    className="bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                   >
                     Apply Filters
                   </Button>
@@ -288,7 +287,7 @@ const TicketList: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={resetFilters}
-                    className="transform hover:scale-105 transition-transform duration-200 hover:shadow-md hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+                    className="hover:bg-red-50 hover:text-red-600 hover:border-red-300"
                   >
                     Reset
                   </Button>
@@ -421,11 +420,10 @@ const TicketList: React.FC = () => {
                 <div className="mt-4">
                   <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
                     <Button
-                      variant="primary"
                       size="sm"
-                      leftIcon={<PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />}
-                      className="group hover:shadow-md transition-all duration-200"
+                      className="group hover:shadow-md transition-all bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                     >
+                      <PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />
                       Create a new ticket
                     </Button>
                   </Link>

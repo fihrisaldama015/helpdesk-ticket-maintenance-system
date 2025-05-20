@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 import useAuthStore from '../../store/authStore';
 import AuthBackgroundOverlay from './AuthBackgroundOverlay';
 
@@ -15,9 +15,8 @@ interface LoginFormInputs {
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, error, clearError } = useAuthStore();
+  const { login, error, clearError, isLoading } = useAuthStore();
   const [showError, setShowError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
@@ -43,7 +42,6 @@ const Login: React.FC = () => {
   }, [error]);
 
   const onSubmit = async (data: LoginFormInputs) => {
-    setIsSubmitting(true);
     clearError();
     const success = await login(data.email, data.password);
     if (success) {
@@ -51,7 +49,6 @@ const Login: React.FC = () => {
     } else {
       setShowError(true);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -116,6 +113,7 @@ const Login: React.FC = () => {
                   </div>
                   <input
                     id="password"
+                    data-testid="password-input"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     className={`appearance-none block w-full pl-10 pr-10 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
@@ -144,11 +142,13 @@ const Login: React.FC = () => {
               <div>
                 <Button
                   type="submit"
-                  fullWidth
-                  isLoading={isSubmitting}
-                  className="w-full transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+                  className="w-full transition-all hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
                 >
-                  Sign in
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    'Sign in'
+                  )}
                 </Button>
               </div>
             </form>

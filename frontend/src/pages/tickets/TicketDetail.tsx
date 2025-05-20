@@ -75,7 +75,7 @@ const TicketDetail: React.FC = () => {
         <div className="bg-white shadow rounded-lg p-8 text-center">
           <h2 className="text-xl font-medium text-gray-900 mb-4">Ticket Not Found</h2>
           <p className="text-gray-600 mb-6">The ticket you are looking for does not exist or you don't have permission to view it.</p>
-          <Button onClick={() => navigate('/tickets')}>Back to Tickets</Button>
+          <Button onClick={() => user?.role === 'L1_AGENT' ? navigate('/tickets') : navigate('/escalated')}>{user?.role === 'L1_AGENT' ? 'Back to Tickets' : 'Back to Escalated Tickets'}</Button>
         </div>
       </Layout>
     );
@@ -123,7 +123,7 @@ const TicketDetail: React.FC = () => {
   return (
     <Layout requireAuth>
       <div className="bg-white shadow-lg rounded-lg mb-6 overflow-hidden border border-blue-100 transition-all duration-300 hover:shadow-xl">
-        <TicketDescription currentTicket={currentTicket} />
+        <TicketDescription currentTicket={currentTicket} userRole={user?.role} />
 
         <div className='px-6 py-5 border-t border-blue-100 flex flex-wrap gap-3 bg-blue-50'>
           {/* Error Message */}

@@ -56,7 +56,6 @@ const useTicketStore = create<TicketState>((set, get) => ({
 
     try {
       const response = await ticketRepository.getTickets(appliedFilters);
-      console.log('response:', response)
       set({
         tickets: response.tickets,
         totalTickets: response.total,

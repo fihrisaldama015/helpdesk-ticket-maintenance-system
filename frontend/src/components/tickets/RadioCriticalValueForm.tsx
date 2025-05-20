@@ -1,5 +1,5 @@
 import { CriticalValue } from "@/types";
-import { AlertCircle, AlertOctagon, AlertTriangle, Loader2, Save, Shield, X } from "lucide-react";
+import { AlertOctagon, AlertTriangle, Info, Loader2, Save, Shield, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -43,69 +43,80 @@ const RadioCriticalValueForm = ({
             onValueChange={(value) => setSelectedCriticalValue(value as CriticalValue)}
             className="space-y-3"
           >
+            {/* Hidden radio inputs for form submission and accessibility */}
+            <RadioGroupItem value="C1" id="critical-c1" data-testid="critical-c1" className="sr-only" />
+            <RadioGroupItem value="C2" id="critical-c2" data-testid="critical-c2" className="sr-only" />
+            <RadioGroupItem value="C3" id="critical-c3" data-testid="critical-c3" className="sr-only" />
+            
+            {/* C1 Option */}
             <div
-              className={`flex items-start p-3 rounded-md border ${selectedCriticalValue === 'C1' ? 'border-blue-200 bg-blue-50' : 'border-transparent'} hover:border-blue-200 hover:bg-blue-50 transition-all duration-200 cursor-pointer`}
+              className={`flex items-start p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                selectedCriticalValue === 'C1'
+                  ? 'border-red-200 bg-red-50'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
               onClick={() => setSelectedCriticalValue('C1')}
             >
-              <RadioGroupItem
-                value="C1"
-                id="critical-c1"
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                style={{
-                  backgroundColor: selectedCriticalValue === 'C1' ? '#2563eb' : 'transparent',
-                  borderColor: '#2563eb'
-                }}
-              />
-              <div className="ml-3 w-full flex items-start">
+              <div className="w-full flex items-start">
                 <div className="flex-1">
-                  <span className="block text-sm font-medium text-gray-800">C1 (Critical)</span>
+                  <span className={`block text-sm font-medium ${
+                    selectedCriticalValue === 'C1' ? 'text-red-600' : 'text-gray-800'
+                  }`}>C1 (Critical)</span>
                   <span className="block text-sm text-gray-500 mt-1">System down or significantly impacted</span>
                 </div>
-                <AlertOctagon className="h-5 w-5 text-red-500 flex-shrink-0" />
+                <AlertOctagon 
+                  className={`h-6 w-6 flex-shrink-0 transition-all duration-200 ${
+                    selectedCriticalValue === 'C1' ? 'text-red-600' : 'text-gray-300'
+                  }`} 
+                />
               </div>
             </div>
 
+            {/* C2 Option */}
             <div
-              className={`flex items-start p-3 rounded-md border ${selectedCriticalValue === 'C2' ? 'border-blue-200 bg-blue-50' : 'border-transparent'} hover:border-blue-200 hover:bg-blue-50 transition-all duration-200 cursor-pointer`}
+              className={`flex items-start p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                selectedCriticalValue === 'C2'
+                  ? 'border-orange-200 bg-orange-50'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
               onClick={() => setSelectedCriticalValue('C2')}
             >
-              <RadioGroupItem
-                value="C2"
-                id="critical-c2"
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                style={{
-                  backgroundColor: selectedCriticalValue === 'C2' ? '#2563eb' : 'transparent',
-                  borderColor: '#2563eb'
-                }}
-              />
-              <div className="ml-3 w-full flex items-start">
+              <div className="w-full flex items-start">
                 <div className="flex-1">
-                  <span className="block text-sm font-medium text-gray-800">C2 (Major)</span>
+                  <span className={`block text-sm font-medium ${
+                    selectedCriticalValue === 'C2' ? 'text-orange-600' : 'text-gray-800'
+                  }`}>C2 (Major)</span>
                   <span className="block text-sm text-gray-500 mt-1">Partial feature issue or limited impact</span>
                 </div>
-                <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0" />
+                <AlertTriangle 
+                  className={`h-5 w-5 flex-shrink-0 transition-all duration-200 ${
+                    selectedCriticalValue === 'C2' ? 'text-orange-500' : 'text-gray-300'
+                  }`} 
+                />
               </div>
             </div>
 
+            {/* C3 Option */}
             <div
-              className={`flex items-start p-3 rounded-md border ${selectedCriticalValue === 'C3' ? 'border-blue-200 bg-blue-50' : 'border-transparent'} hover:border-blue-200 hover:bg-blue-50 transition-all duration-200 cursor-pointer`}
+              className={`flex items-start p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                selectedCriticalValue === 'C3'
+                  ? 'border-yellow-200 bg-yellow-50'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
               onClick={() => setSelectedCriticalValue('C3')}
             >
-              <RadioGroupItem
-                value="C3"
-                id="critical-c3"
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                style={{
-                  backgroundColor: selectedCriticalValue === 'C3' ? '#2563eb' : 'transparent',
-                  borderColor: '#2563eb'
-                }}
-              />
-              <div className="ml-3 w-full flex items-start">
+              <div className="w-full flex items-start">
                 <div className="flex-1">
-                  <span className="block text-sm font-medium text-gray-800">C3 (Minor)</span>
+                  <span className={`block text-sm font-medium ${
+                    selectedCriticalValue === 'C3' ? 'text-yellow-600' : 'text-gray-800'
+                  }`}>C3 (Minor)</span>
                   <span className="block text-sm text-gray-500 mt-1">Minor problem or inquiry</span>
                 </div>
-                <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+                <Info 
+                  className={`h-5 w-5 flex-shrink-0 transition-all duration-200 ${
+                    selectedCriticalValue === 'C3' ? 'text-yellow-500' : 'text-gray-300'
+                  }`} 
+                />
               </div>
             </div>
           </RadioGroup>

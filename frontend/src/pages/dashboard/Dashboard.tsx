@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, Clock, Loader, AlertTriangle, CheckCircle } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 import useAuthStore from '../../store/authStore';
 import useTicketStore from '../../store/ticketStore';
 
@@ -52,13 +52,13 @@ const Dashboard: React.FC = () => {
               Your dashboard
             </h4>
             {user?.role === 'L1_AGENT' && (
-              <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
+              <Link to="/tickets/create" className="transform hover:scale-105 active:scale-95 transition-transform duration-200">
                 <Button
-                  variant="primary"
                   size="sm"
-                  leftIcon={<PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />}
-                  className="group hover:shadow-md transition-all duration-200"
+                  variant="default"
+                  className="group hover:shadow-md transition-all duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
                 >
+                  <PlusCircle size={16} className="group-hover:rotate-90" />
                   New Ticket
                 </Button>
               </Link>

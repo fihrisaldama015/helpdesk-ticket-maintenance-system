@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileQuestion } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 
 const NotFound: React.FC = () => {
   const navigate = useNavigate();
@@ -16,25 +16,22 @@ const NotFound: React.FC = () => {
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Page Not Found</h2>
-          
-          <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Page Not Found</h2>
+
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
             The page you are looking for doesn't exist or has been moved.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button
               variant="outline"
-              size="lg"
               onClick={() => navigate(-1)}
               className="hover:bg-gray-100 transition-colors"
             >
               Go Back
             </Button>
-            
+
             <Button
-              variant="primary"
-              size="lg"
               onClick={() => navigate('/')}
               className="bg-blue-600 hover:bg-blue-700 transition-colors"
             >

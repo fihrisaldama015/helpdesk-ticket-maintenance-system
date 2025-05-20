@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 import useAuthStore from '../../store/authStore';
 import { UserRole } from '../../types';
 import AuthBackgroundOverlay from './AuthBackgroundOverlay';
@@ -88,7 +88,7 @@ const Register: React.FC = () => {
                 </div>
               </div>
             )}
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} aria-label="Registration form">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                   First name
@@ -99,6 +99,7 @@ const Register: React.FC = () => {
                   </div>
                   <input
                     id="firstName"
+                    data-testid="first-name-input"
                     type="text"
                     autoComplete="given-name"
                     className={`appearance-none block w-full pl-10 pr-3 py-2 border ${errors.firstName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
@@ -119,6 +120,7 @@ const Register: React.FC = () => {
                   </div>
                   <input
                     id="lastName"
+                    data-testid="last-name-input"
                     type="text"
                     autoComplete="family-name"
                     className={`appearance-none block w-full pl-10 pr-3 py-2 border ${errors.lastName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
@@ -140,11 +142,11 @@ const Register: React.FC = () => {
                   </div>
                   <input
                     id="email"
+                    data-testid="email-input"
                     type="email"
                     autoComplete="email"
-                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${
-                      errors.email ? 'border-red-300' : 'border-gray-300'
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+                      } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                     {...register('email', {
                       required: 'Email is required',
                       pattern: {
@@ -169,6 +171,7 @@ const Register: React.FC = () => {
                   </div>
                   <input
                     id="password"
+                    data-testid="password-input"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     className={`appearance-none block w-full pl-10 pr-10 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
@@ -205,6 +208,7 @@ const Register: React.FC = () => {
                   </div>
                   <input
                     id="confirmPassword"
+                    data-testid="confirm-password-input"
                     type={showConfirmPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     className={`appearance-none block w-full pl-10 pr-10 py-2 border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 sm:text-sm transition-all duration-200`}
@@ -234,9 +238,9 @@ const Register: React.FC = () => {
                 </label>
                 <select
                   id="role"
-                  className={`mt-1 block w-full pl-3 pr-10 py-2 text-base border ${
-                    errors.role ? 'border-red-300' : 'border-gray-300'
-                  } focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md`}
+                  data-testid="role-select"
+                  className={`mt-1 block w-full pl-3 pr-10 py-2 text-base border ${errors.role ? 'border-red-300' : 'border-gray-300'
+                    } focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md`}
                   {...register('role', {
                     required: 'Please select a role',
                   })}
@@ -252,11 +256,9 @@ const Register: React.FC = () => {
               <div>
                 <Button
                   type="submit"
-                  fullWidth
-                  isLoading={isLoading}
-                  className="w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 hover:scale-105 active:scale-95 transition-all"
                 >
-                  Register
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Register'}
                 </Button>
               </div>
             </form>

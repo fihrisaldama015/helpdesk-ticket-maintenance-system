@@ -2,7 +2,7 @@ import { ShieldAlert } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 
 const Unauthorized: React.FC = () => {
   const navigate = useNavigate();
@@ -16,24 +16,21 @@ const Unauthorized: React.FC = () => {
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-md mx-auto">
+
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
             You do not have permission to access this page.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button
               variant="outline"
-              size="lg"
               onClick={() => navigate(-1)}
               className="hover:bg-gray-100 transition-colors"
             >
               Go Back
             </Button>
-            
+
             <Button
-              variant="primary"
-              size="lg"
               onClick={() => navigate('/dashboard')}
               className="bg-blue-600 hover:bg-blue-700 transition-colors"
             >

@@ -2,7 +2,7 @@ import { LogOut, Menu, TicketIcon, User } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
-import Button from '../Button';
+import { Button } from '../ui/button';
 
 const Navbar: React.FC = () => {
   const { user, isLoading, logout, isAuthenticated } = useAuthStore();
@@ -65,8 +65,8 @@ const Navbar: React.FC = () => {
           <div className="hidden sm:ml-6 sm:flex sm:items-center" data-testid="desktop-user-controls">
             {isUserLoaded ? (
               <div className="flex items-center space-x-4">
-                <div 
-                  data-testid="desktop-user-info" 
+                <div
+                  data-testid="desktop-user-info"
                   className="text-sm font-medium text-gray-700 bg-white ring-1 ring-gray-200 py-1 px-3 rounded-full shadow-sm animate-fadeIn"
                 >
                   {user?.firstName} {user?.lastName} <span className="text-blue-600 font-semibold">({user?.role})</span>
@@ -75,19 +75,19 @@ const Navbar: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  leftIcon={<LogOut size={16} className="group-hover:text-red-500 transition-colors duration-200 animate-slideInLeft" />}
                   className="group hover:bg-red-50 transition-all duration-200"
                 >
+                  <LogOut size={16} className="group-hover:text-red-500 transition-colors duration-200 animate-slideInLeft" />
                   <span className="group-hover:text-red-600 transition-colors duration-200 animate-slideInLeft">Logout</span>
                 </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link to="/login" className="animate-slideInLeft">
-                  <Button variant="outline" size="sm" className="hover:shadow-md transition-shadow duration-200">Login</Button>
+                  <Button variant="outline" size="sm" className="hover:scale-105 active:scale-95 transition-all">Login</Button>
                 </Link>
                 <Link to="/register" className="animate-slideInLeft">
-                  <Button variant="primary" size="sm" className="hover:shadow-md transition-shadow duration-200">Register</Button>
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 hover:scale-105 active:scale-95 transition-all">Register</Button>
                 </Link>
               </div>
             )}
@@ -95,16 +95,17 @@ const Navbar: React.FC = () => {
 
           {/* Mobile menu button */}
           <div className="flex items-center sm:hidden">
-            <button
+            <Button
               type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-blue-500 hover:text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
+              size="sm"
+              className="bg-white text-blue-500 hover:text-blue-700 hover:bg-blue-50"
               aria-controls="mobile-menu"
               aria-expanded="false"
               onClick={toggleMenu}
             >
               <span className="sr-only">Open main menu</span>
               <Menu className="block h-6 w-6 transform transition-transform duration-200 hover:rotate-180" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -148,30 +149,31 @@ const Navbar: React.FC = () => {
                     <User className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="ml-3">
-                    <div 
-                      data-testid="mobile-user-name" 
+                    <div
+                      data-testid="mobile-user-name"
                       className="text-base font-medium text-gray-800"
                     >
                       {user?.firstName} {user?.lastName}
                     </div>
-                    <div 
-                      data-testid="mobile-user-role" 
+                    <div
+                      data-testid="mobile-user-role"
                       className="text-sm font-medium text-blue-600"
                     >
                       {user?.role.replace('_', ' ')}
                     </div>
                   </div>
                 </div>
-                <div className="mt-3 space-y-1">
-                  <button
+                <div className="mt-3 mx-3 space-y-1">
+                  <Button
+                    variant="default"
                     onClick={() => {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-base font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 rounded-md"
+                    className="w-full text-gray-600 hover:text-red-600 bg-white hover:bg-red-50 transition-colors duration-200 rounded-md"
                   >
                     Sign out
-                  </button>
+                  </Button>
                 </div>
               </div>
             </>

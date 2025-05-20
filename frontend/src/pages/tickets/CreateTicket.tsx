@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { AlertCircle, ArrowRight, Calendar as CalendarIcon, FileText, Loader, Tag, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../components/Button';
+import { Button } from '../../components/ui/button';
 import Layout from '../../components/layout/Layout';
 import useTicketStore from '../../store/ticketStore';
 import { TicketCategory, TicketPriority } from '../../types';
@@ -364,9 +364,8 @@ const CreateTicket: React.FC = () => {
                 </Button>
                 <Button
                   type="submit"
-                  className="transition-all group hover:translate-y-[-2px]"
+                  className="transition-all group hover:translate-y-[-2px] bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={isLoading}
-                  rightIcon={<ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />}
                 >
                   <span className="flex items-center">
                     {isLoading ? (
@@ -377,6 +376,7 @@ const CreateTicket: React.FC = () => {
                     ) : (
                       "Create Ticket"
                     )}
+                    <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
               </div>

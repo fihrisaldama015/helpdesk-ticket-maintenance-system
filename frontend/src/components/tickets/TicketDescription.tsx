@@ -7,28 +7,29 @@ import { Ticket } from "@/types";
 
 interface TicketDescriptionProps {
   currentTicket: Ticket;
+  userRole: string | undefined;
 }
 
-const TicketDescription: React.FC<TicketDescriptionProps> = ({ currentTicket }) => {
+const TicketDescription: React.FC<TicketDescriptionProps> = ({ currentTicket, userRole }) => {
   const navigate = useNavigate();
   return (
     <>
       < div className="px-6 py-5 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white" >
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <div className="flex items-center">
-            <div className="mr-3 bg-blue-100 p-2 rounded-full">
-              <TicketIcon className="h-6 w-6 text-blue-600" />
+            <div data-testid="ticket-icon-container" className="mr-3 bg-blue-100 p-2 rounded-full">
+              <TicketIcon data-testid="ticket-icon" className="h-6 w-6 text-blue-600" />
             </div>
             <div>
               <h3 className="text-xl font-medium text-gray-900 mb-1 transition-all duration-300 hover:text-blue-700">
                 {currentTicket.title}
               </h3>
               <div className="flex flex-wrap gap-2 mb-2">
-                <StatusBadge status={currentTicket.status} />
-                <StatusBadge priority={currentTicket.priority} />
-                {currentTicket.criticalValue && (
-                  <StatusBadge criticalValue={currentTicket.criticalValue} />
-                )}
+                <StatusBadge data-testid="status-badge" status={currentTicket.status} />
+                <StatusBadge data-testid="priority-badge" priority={currentTicket.priority} />
+                {
+                  <StatusBadge data-testid="critical-value-badge" criticalValue={currentTicket.criticalValue} />
+                }
               </div>
             </div>
           </div>
@@ -36,11 +37,11 @@ const TicketDescription: React.FC<TicketDescriptionProps> = ({ currentTicket }) 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/tickets')}
+              onClick={() => userRole === 'L1_AGENT' ? navigate('/tickets') : navigate('/escalated')}
               className="hover:bg-blue-50 transition-colors duration-300 flex items-center gap-2 border-blue-200"
             >
               <ArrowLeft size={16} />
-              Back to Tickets
+              {userRole === 'L1_AGENT' ? 'Back to Tickets' : 'Back to Escalated Tickets'}
             </Button>
           </div>
         </div>
@@ -82,7 +83,7 @@ const TicketDescription: React.FC<TicketDescriptionProps> = ({ currentTicket }) 
                 </div>
               </div>
 
-              <div className="flex items-start group">
+              <div className="flex items-start group" data-testid="expected-completion-section">
                 <Clock className="h-5 w-5 text-blue-500 mr-2 mt-0.5 group-hover:text-blue-600 transition-colors duration-300" />
                 <div>
                   <span className="block text-sm font-medium text-gray-500">Expected Completion</span>
