@@ -10,7 +10,7 @@ import { TicketCategory, TicketFilter, TicketPriority, TicketStatus } from '../.
 
 const TicketList: React.FC = () => {
   const { user } = useAuthStore();
-  const { tickets, isLoading, getTickets, getMyTickets, setFilters, filters } = useTicketStore();
+  const { tickets, totalTickets, isLoading, getTickets, getMyTickets, setFilters, filters } = useTicketStore();
 
   // Filter states
   const [showFilters, setShowFilters] = useState(false);
@@ -381,7 +381,7 @@ const TicketList: React.FC = () => {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing page <span className="font-medium">{currentPage}</span>
+                      Showing page <span className="font-medium">{currentPage} of {Math.ceil(totalTickets / itemsPerPage)}</span>
                     </p>
                   </div>
                   <div>
@@ -398,8 +398,8 @@ const TicketList: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={tickets.length < itemsPerPage}
-                        className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${tickets.length < itemsPerPage
+                        disabled={(totalTickets / itemsPerPage) < currentPage}
+                        className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${((totalTickets / itemsPerPage) < currentPage)
                           ? 'text-gray-300 cursor-not-allowed'
                           : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
                       >
@@ -412,17 +412,16 @@ const TicketList: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="py-10 text-center bg-blue-50 rounded-xl shadow-inner">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md text-blue-500 mb-4 animate-bounce">
-                <AlertTriangle size={24} />
+            <div className="py-10 text-center bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl shadow-inner">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md text-yellow-600 mb-4 animate-bounce ring-1 ring-yellow-600">
+                <AlertTriangle size={32} />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No tickets found</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-6">There are no tickets matching your current filters.</p>
+              <p className="text-gray-600 text-sm max-w-md mx-auto mb-6">There are no tickets matching your current filters.</p>
               {user?.role === 'L1_AGENT' && (
                 <div className="mt-4">
                   <Link to="/tickets/create" className="transform hover:scale-105 transition-transform duration-200">
                     <Button
-                      size="sm"
                       className="group hover:shadow-md transition-all bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                     >
                       <PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" />

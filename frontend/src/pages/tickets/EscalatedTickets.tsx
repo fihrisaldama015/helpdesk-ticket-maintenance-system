@@ -9,7 +9,7 @@ import { CriticalValue, TicketCategory, TicketFilter } from '../../types';
 
 const EscalatedTickets: React.FC = () => {
   const { user } = useAuthStore();
-  const { tickets, isLoading, getEscalatedTickets, setFilters, filters } = useTicketStore();
+  const { tickets, totalTickets, isLoading, getEscalatedTickets, setFilters, filters } = useTicketStore();
 
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [criticalValueFilter, setCriticalValueFilter] = useState<CriticalValue[]>([]);
@@ -140,7 +140,7 @@ const EscalatedTickets: React.FC = () => {
                             ACCESS: 'Access',
                             OTHER: 'Other',
                           })[index] as TicketCategory;
-                          
+
                           if (categoryFilter.includes(cat)) {
                             setCategoryFilter(categoryFilter.filter(c => c !== cat));
                           } else {
@@ -273,7 +273,7 @@ const EscalatedTickets: React.FC = () => {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700">
-                      Showing page <span className="font-medium">{currentPage}</span>
+                      Showing page <span className="font-medium">{currentPage} of {Math.ceil(totalTickets / itemsPerPage)}</span>
                     </p>
                   </div>
                   <div>
@@ -290,8 +290,8 @@ const EscalatedTickets: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={tickets.length < itemsPerPage}
-                        className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${tickets.length < itemsPerPage
+                        disabled={(totalTickets / itemsPerPage) < currentPage}
+                        className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium transition-colors duration-200 ${((totalTickets / itemsPerPage) < currentPage)
                           ? 'text-gray-300 cursor-not-allowed'
                           : 'text-blue-600 hover:bg-blue-50 hover:text-blue-800'}`}
                       >
@@ -304,12 +304,12 @@ const EscalatedTickets: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="py-10 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 mb-4">
+            <div className="py-10 text-center bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl shadow-inner">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-md text-yellow-600 mb-4 animate-bounce ring-1 ring-yellow-600">
                 <AlertTriangle size={32} />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No escalated tickets found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
+              <p className="text-gray-600 text-sm max-w-md mx-auto mb-6">
                 {user?.role === 'L2_SUPPORT'
                   ? "There are currently no tickets escalated to L2 support. Tickets will appear here when L1 agents escalate issues they can't resolve."
                   : "There are currently no critical tickets (C1/C2) escalated to L3 support. Tickets will appear here when L2 support escalates critical issues."}
