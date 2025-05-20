@@ -361,50 +361,189 @@ export class TicketService {
     return updatedTicket;
   }
 
-  async getTicketsByAssignee(userId: string) {
-    return prisma.ticket.findMany({
-      where: {
-        assignedToId: userId,
-      },
+  async getMyTickets(
+    userId: string,
+    filters: {
+      status: string[];
+      priority: string[];
+      category: string[];
+      search: string;
+      page: number;
+      limit: number;
+    }
+  ): Promise<{
+    tickets: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    // Build the where clause with proper type safety
+    const where: any = {
+      assignedToId: userId,
+      AND: []
+    };
+
+    // Apply status filter
+    if (filters.status && filters.status.length > 0) {
+      where.AND.push({
+        status: {
+          in: filters.status
+        }
+      });
+    }
+
+    // Apply priority filter
+    if (filters.priority && filters.priority.length > 0) {
+      where.AND.push({
+        priority: {
+          in: filters.priority
+        }
+      });
+    }
+
+    // Apply category filter
+    if (filters.category && filters.category.length > 0) {
+      where.AND.push({
+        category: {
+          in: filters.category
+        }
+      });
+    }
+
+    // Apply search filter
+    if (filters.search) {
+      where.AND.push({
+        OR: [
+          { title: { contains: filters.search, mode: 'insensitive' } },
+          { description: { contains: filters.search, mode: 'insensitive' } }
+        ]
+      });
+    }
+
+    // Get total count for pagination
+    const total = await prisma.ticket.count({ where });
+    
+    // Calculate pagination
+    const skip = (filters.page - 1) * filters.limit;
+    
+    // Get paginated results
+    const tickets = await prisma.ticket.findMany({
+      where,
       include: {
         createdBy: {
           select: {
             id: true,
-            email: true,
             firstName: true,
             lastName: true,
+            email: true,
             role: true
           }
         },
         assignedTo: {
           select: {
             id: true,
-            email: true,
             firstName: true,
             lastName: true,
+            email: true,
             role: true
           }
-        }
+        },
+        actions: true
       },
       orderBy: {
         updatedAt: 'desc'
-      }
+      },
+      skip,
+      take: filters.limit
     });
+
+    return {
+      tickets,
+      total,
+      page: filters.page,
+      limit: filters.limit,
+      totalPages: Math.ceil(total / filters.limit)
+    };
   }
 
-  async getEscalatedTickets(level: 'L2' | 'L3') {
+  async getEscalatedTickets(
+    level: 'L2' | 'L3',
+    filters: {
+      criticalValue: string[];
+      category: string[];
+      search: string;
+      page: number;
+      limit: number;
+    }
+  ) {
+    console.log('getEscalatedTickets called with:', { level, filters });
+    
+    try {
     const status = level === 'L2'
       ? TicketStatus.ESCALATED_L2
       : TicketStatus.ESCALATED_L3;
-    const where: any = {
-      status
-    };
+      
+    // Start with base where conditions
+    const where: any = { status };
+
+    // Initialize AND array to combine all conditions
+    const andConditions: any[] = [];
+
+    // Add status condition
+    andConditions.push({ status });
+
+    // Apply level-specific filters
     if (level === 'L3') {
-      where.criticalValue = {
-        in: [CriticalValue.C1, CriticalValue.C2]
-      };
+      andConditions.push({
+        criticalValue: {
+          in: [CriticalValue.C1, CriticalValue.C2]
+        }
+      });
     }
-    return prisma.ticket.findMany({
+
+    // Apply search filter
+    if (filters.search) {
+      andConditions.push({
+        OR: [
+          { title: { contains: filters.search, mode: 'insensitive' } },
+          { description: { contains: filters.search, mode: 'insensitive' } }
+        ]
+      });
+    }
+
+    // Apply critical value filter
+    if (filters.criticalValue && filters.criticalValue.length > 0) {
+      andConditions.push({
+        criticalValue: {
+          in: filters.criticalValue
+        }
+      });
+    }
+
+    // Apply category filter
+    if (filters.category && filters.category.length > 0) {
+      andConditions.push({
+        category: {
+          in: filters.category
+        }
+      });
+    }
+
+    // Combine all conditions with AND
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+    
+    console.log('Final where clause:', JSON.stringify(where, null, 2));
+
+    // Get total count for pagination
+    const total = await prisma.ticket.count({ where });
+
+    // Get paginated results
+    console.log('Fetching tickets with pagination:', { skip: (filters.page - 1) * filters.limit, take: filters.limit });
+    const skip = (filters.page - 1) * filters.limit;
+    const tickets = await prisma.ticket.findMany({
       where,
       include: {
         createdBy: {
@@ -428,7 +567,25 @@ export class TicketService {
       },
       orderBy: {
         updatedAt: 'desc'
-      }
+      },
+      skip,
+      take: filters.limit
     });
+
+    const result = {
+      tickets,
+      total,
+      page: filters.page,
+      limit: filters.limit,
+      totalPages: Math.ceil(total / filters.limit)
+    };
+    
+    console.log('Returning result with ticket count:', tickets.length);
+    return result; 
+    
+    } catch (error) {
+      console.error('Error in getEscalatedTickets:', error);
+      throw error;
+    }
   }
 }

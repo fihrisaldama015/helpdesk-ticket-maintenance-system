@@ -46,7 +46,8 @@ const ticketRepository = {
         tickets,
         total: tickets.length,
         limit: 10,
-        page: 1
+        page: 1,
+        totalPages: Math.ceil(tickets.length / 10)
       };
       return result;
     } catch (error: any) {
@@ -83,15 +84,9 @@ const ticketRepository = {
         }
       }
 
-      const response = await apiClient.get<Ticket[]>('/tickets/my-tickets', { params });
+      const response = await apiClient.get<TicketListResponse>('/tickets/my-tickets', { params });
       const tickets = response.data;
-      const result: TicketListResponse = {
-        tickets,
-        total: tickets.length,
-        limit: 10,
-        page: 1
-      };
-      return result;
+      return tickets;
     } catch (error: any) {
       throw {
         message: error.response?.data?.error || 'An error occurred while fetching your tickets',
@@ -125,14 +120,8 @@ const ticketRepository = {
         }
       }
 
-      const response = await apiClient.get<Ticket[]>('/tickets/escalated-tickets', { params });
-      const tickets = response.data;
-      const result: TicketListResponse = {
-        tickets,
-        total: tickets.length,
-        limit: 10,
-        page: 1
-      };
+      const response = await apiClient.get<TicketListResponse>('/tickets/escalated-tickets', { params });
+      const result = response.data;
       return result;
     } catch (error: any) {
       throw {

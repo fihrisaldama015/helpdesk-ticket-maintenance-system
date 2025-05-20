@@ -223,8 +223,7 @@ const TicketList: React.FC = () => {
                     HARDWARE: 'Hardware',
                     SOFTWARE: 'Software',
                     NETWORK: 'Network',
-                    EMAIL: 'Email',
-                    ACCOUNT: 'Account',
+                    ACCESS: 'Access',
                     OTHER: 'Other',
                   }).map((category, index) => (
                     <div key={index} className="flex items-center group">
@@ -236,16 +235,14 @@ const TicketList: React.FC = () => {
                           HARDWARE: 'Hardware',
                           SOFTWARE: 'Software',
                           NETWORK: 'Network',
-                          EMAIL: 'Email',
-                          ACCOUNT: 'Account',
+                          ACCESS: 'Access',
                           OTHER: 'Other',
                         })[index] as TicketCategory)}
                         onChange={() => handleCategoryFilterChange(Object.keys({
                           HARDWARE: 'Hardware',
                           SOFTWARE: 'Software',
                           NETWORK: 'Network',
-                          EMAIL: 'Email',
-                          ACCOUNT: 'Account',
+                          ACCESS: 'Access',
                           OTHER: 'Other',
                         })[index] as TicketCategory)}
                       />
@@ -272,6 +269,11 @@ const TicketList: React.FC = () => {
                     placeholder="Search tickets..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        applyFilters();
+                      }
+                    }}
                   />
                 </div>
 

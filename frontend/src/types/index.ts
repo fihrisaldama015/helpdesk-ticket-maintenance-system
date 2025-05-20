@@ -72,6 +72,7 @@ export interface TicketListResponse {
   total: number;
   page: number;
   limit: number;
+  totalPages: number;
 }
 
 // Filter Types

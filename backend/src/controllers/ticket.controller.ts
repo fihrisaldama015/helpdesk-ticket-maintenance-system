@@ -2,6 +2,15 @@ import { Request, Response } from 'express';
 import { TicketService } from '../services/ticket.service';
 import { TicketStatus, UserRole, CriticalValue } from '../models';
 
+declare module 'express' {
+  interface Request {
+    user?: {
+      id: string;
+      role: string;
+    };
+  }
+}
+
 export class TicketController {
   constructor(private ticketService: TicketService) { }
 
@@ -278,18 +287,80 @@ export class TicketController {
       }
     }
   }
-
   async getMyTickets(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({ message: 'Not authenticated' });
         return;
       }
-      const tickets = await this.ticketService.getTicketsByAssignee(req.user.id);
-      res.status(200).json(tickets);
-    } catch (error) {
+
+      const userId = req.user.id;
+
+      // Extract and type query parameters with proper typing
+      const {
+        status: statusParam = [],
+        priority: priorityParam = [],
+        category: categoryParam = [],
+        search = '',
+        page = '1',
+        limit = '10'
+      } = req.query as {
+        status?: string | string[];
+        priority?: string | string[];
+        category?: string | string[];
+        search?: string | string[];
+        page?: string;
+        limit?: string;
+      };
+
+      // Parse and validate query parameters
+      const pageNumber = Math.max(1, parseInt(page, 10) || 1);
+      const limitNumber = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+
+      // Convert query parameters to string arrays
+      const toArray = (value: string | string[] | undefined): string[] => {
+        if (Array.isArray(value)) {
+          return value.filter((v): v is string => typeof v === 'string');
+        }
+        return value ? [value] : [];
+      };
+
+      const status = toArray(statusParam);
+      const priority = toArray(priorityParam);
+      const category = toArray(categoryParam);
+
+      // Ensure search is always a string
+      let searchTerm = '';
+      if (Array.isArray(search)) {
+        searchTerm = search[0] || '';
+      } else if (typeof search === 'string') {
+        searchTerm = search;
+      }
+
+      const result = await this.ticketService.getMyTickets(userId, {
+        status,
+        priority,
+        category,
+        search: searchTerm,
+        page: pageNumber,
+        limit: limitNumber
+      });
+
+      res.status(200).json(result);
+    } catch (error: any) {
       console.error('Get my tickets error:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      if (error.code) {
+        res.status(500).json({
+          message: 'Database error',
+          code: error.code,
+          meta: error.meta
+        });
+      } else {
+        res.status(500).json({
+          message: error.message || 'Internal server error',
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+      }
     }
   }
 
@@ -308,11 +379,61 @@ export class TicketController {
         res.status(403).json({ message: 'Access denied' });
         return;
       }
-      const tickets = await this.ticketService.getEscalatedTickets(level);
-      res.status(200).json(tickets);
-    } catch (error) {
+
+      // Extract and type query parameters
+      const {
+        criticalValue: criticalValueParam,
+        category: categoryParam,
+        search,
+        page = '1',
+        limit = '10'
+      } = req.query;
+
+      // Parse and validate query parameters
+      const pageNumber = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNumber = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 10));
+
+      // Convert query parameters to the correct types
+      const criticalValue = Array.isArray(criticalValueParam)
+        ? criticalValueParam.filter((v): v is string => typeof v === 'string')
+        : typeof criticalValueParam === 'string'
+          ? [criticalValueParam]
+          : undefined;
+
+      const category = Array.isArray(categoryParam)
+        ? categoryParam.filter((v): v is string => typeof v === 'string')
+        : typeof categoryParam === 'string'
+          ? [categoryParam]
+          : undefined;
+
+      const searchTerm = typeof search === 'string' ? search : undefined;
+
+      // Prepare filters with proper typing and default values
+      const filters = {
+        criticalValue: criticalValue || [],
+        category: category || [],
+        search: searchTerm || '',
+        page: pageNumber,
+        limit: limitNumber
+      };
+
+      const result = await this.ticketService.getEscalatedTickets(level, filters);
+      res.status(200).json(result);
+    } catch (error: any) {
       console.error('Get escalated tickets error:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      if (error.code) {
+        // Handle Prisma errors
+        res.status(500).json({
+          message: 'Database error',
+          code: error.code,
+          meta: error.meta
+        });
+      } else {
+        res.status(500).json({
+          message: error.message || 'Internal server error',
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+      }
     }
   }
 }

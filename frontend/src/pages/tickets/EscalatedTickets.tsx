@@ -117,7 +117,7 @@ const EscalatedTickets: React.FC = () => {
                     HARDWARE: 'Hardware',
                     SOFTWARE: 'Software',
                     NETWORK: 'Network',
-                    SECURITY: 'Security',
+                    ACCESS: 'Access',
                     OTHER: 'Other',
                   }).map((category, index) => (
                     <div key={index} className="flex items-center group">
@@ -129,7 +129,7 @@ const EscalatedTickets: React.FC = () => {
                           HARDWARE: 'Hardware',
                           SOFTWARE: 'Software',
                           NETWORK: 'Network',
-                          SECURITY: 'Security',
+                          ACCESS: 'Access',
                           OTHER: 'Other',
                         })[index] as TicketCategory)}
                         onChange={() => {
@@ -137,7 +137,7 @@ const EscalatedTickets: React.FC = () => {
                             HARDWARE: 'Hardware',
                             SOFTWARE: 'Software',
                             NETWORK: 'Network',
-                            SECURITY: 'Security',
+                            ACCESS: 'Access',
                             OTHER: 'Other',
                           })[index] as TicketCategory;
                           
@@ -170,6 +170,12 @@ const EscalatedTickets: React.FC = () => {
                     placeholder="Search escalated tickets..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyFilters();
+                      }
+                    }}
                   />
                 </div>
 
