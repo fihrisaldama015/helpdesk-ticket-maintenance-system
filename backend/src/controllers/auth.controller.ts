@@ -19,7 +19,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
   private INVALID_REGISTER_REQUEST_BODY = 'Invalid register request body, make sure all fields are provided. Email, password, firstName, lastName, role are required';
   private INVALID_LOGIN_REQUEST_BODY = 'Invalid login request body, make sure email and password are provided';
-  private INVALID_USER_ROLE = 'Invalid user role, make sure role is provided and is one of the following: L1_AGENT, L2_SUPPORT, L3_SUPPORT, ADMIN';
+  private INVALID_USER_ROLE = 'Invalid user role, make sure role is provided and is one of the following: L1_AGENT, L2_SUPPORT, L3_SUPPORT';
   private INVALID_EMAIL_FORMAT = 'Invalid email format';
 
   async register(req: Request, res: Response): Promise<void> {
