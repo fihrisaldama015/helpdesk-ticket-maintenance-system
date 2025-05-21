@@ -11,7 +11,6 @@ const authRepository = {
       return response.data;
     } catch (error: any) {
       const message =
-        error?.response?.data?.error ||
         error?.response?.data?.message ||
         'Login failed. Please check your credentials.';
       throw { message };
@@ -36,7 +35,6 @@ const authRepository = {
       return response.data;
     } catch (error: any) {
       const message =
-        error?.response?.data?.error ||
         error?.response?.data?.message ||
         'Registration failed. Please try again.';
       throw { message };
@@ -50,7 +48,6 @@ const authRepository = {
       return response.data;
     } catch (error: any) {
       const message =
-        error?.response?.data?.error ||
         error?.response?.data?.message ||
         'Failed to fetch user data. Please try again.';
       throw { message };

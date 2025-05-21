@@ -57,7 +57,10 @@ const EscalatedTickets: React.FC = () => {
       <div className="bg-gradient-to-br from-white to-blue-50 shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl">
         <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-white via-blue-50 to-white flex justify-between items-center">
           <div>
-            <h3 className="text-xl leading-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
+            <h3 
+              className="text-xl leading-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500"
+              data-testid="escalated-tickets-heading"
+            >
               Escalated Tickets
             </h3>
             <p className="mt-1 text-sm font-medium text-gray-600">
@@ -202,7 +205,7 @@ const EscalatedTickets: React.FC = () => {
 
         <div className="px-6 py-5">
           {isLoading ? (
-            <div className="py-10 flex justify-center">
+            <div className="py-10 flex justify-center" data-testid="loading-spinner">
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 shadow-md"></div>
             </div>
           ) : tickets.length > 0 ? (

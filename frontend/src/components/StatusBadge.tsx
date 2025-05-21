@@ -53,7 +53,11 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
     };
     
     return (
-      <span className={cn(baseClassName, priorityClasses[priority], className)}>
+      <span 
+        data-testid="status-badge"
+        data-priority={priority}
+        className={cn(baseClassName, priorityClasses[priority], className)}
+      >
         {priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()} Priority
       </span>
     );

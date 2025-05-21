@@ -14,15 +14,11 @@ import TicketDetail from './pages/tickets/TicketDetail';
 import TicketList from './pages/tickets/TicketList';
 
 function App() {
-  const { loadUser, isLoading, isAuthenticated } = useAuthStore();
+  const { loadUser, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     loadUser();
   }, [loadUser]);
-
-  console.log('[app] auth', isAuthenticated)
-  console.log('[app] loading', isLoading)
-
 
   return (
     <Router>

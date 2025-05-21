@@ -189,4 +189,114 @@ describe('Navbar Component', () => {
     fireEvent.click(menuButton);
     expect(mobileMenu).toHaveClass('max-h-0 opacity-0');
   });
+
+  it('displays user information in mobile menu when authenticated', () => {
+    render(
+      <BrowserRouter>
+        <Navbar />
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    fireEvent.click(menuButton);
+
+    // Check user name and role in mobile menu
+    const mobileUserName = screen.getByTestId('mobile-user-name');
+    expect(mobileUserName).toHaveTextContent('Test User');
+
+    const mobileUserRole = screen.getByTestId('mobile-user-role');
+    expect(mobileUserRole).toHaveTextContent('L1 AGENT');
+  });
+
+  it('navigates and closes mobile menu when mobile links are clicked', () => {
+    render(
+      <BrowserRouter>
+        <Navbar />
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    fireEvent.click(menuButton);
+
+    // Click on Dashboard link in mobile menu
+    const dashboardLink = within(screen.getByTestId('mobile-navigation')).getByText('Dashboard');
+    fireEvent.click(dashboardLink);
+
+    // Verify menu is closed
+    const mobileMenu = document.getElementById('mobile-menu');
+    expect(mobileMenu).toHaveClass('max-h-0 opacity-0');
+  });
+
+  it('logs out and closes mobile menu when mobile logout button is clicked', () => {
+    render(
+      <BrowserRouter>
+        <Navbar />
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    fireEvent.click(menuButton);
+
+    // Find and click the mobile logout button
+    const mobileLogoutBtn = screen.getByText('Sign out');
+    fireEvent.click(mobileLogoutBtn);
+
+    // Verify logout was called and menu is closed
+    expect(mockLogout).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+
+    // Verify menu is closed
+    const mobileMenu = document.getElementById('mobile-menu');
+    expect(mobileMenu).toHaveClass('max-h-0 opacity-0');
+  });
+
+  it('closes mobile menu when mobile login/register links are clicked when not authenticated', () => {
+    mockUseAuthStore.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+      user: null,
+      logout: mockLogout,
+    } as any);
+
+    render(
+      <BrowserRouter>
+        <Navbar />
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    fireEvent.click(menuButton);
+
+    // Click on Login link in mobile menu
+    const loginLink = within(document.getElementById('mobile-menu')!).getByText('Login');
+    fireEvent.click(loginLink);
+
+    // Verify menu is closed
+    const mobileMenu = document.getElementById('mobile-menu');
+    expect(mobileMenu).toHaveClass('max-h-0 opacity-0');
+  });
+
+  it('handles loading state correctly', () => {
+    mockUseAuthStore.mockReturnValue({
+      isAuthenticated: true,
+      isLoading: true,
+      user: null,
+      logout: mockLogout,
+    } as any);
+
+    render(
+      <BrowserRouter>
+        <Navbar />
+      </BrowserRouter>
+    );
+
+    // Verify that navigation links are not shown when loading
+    expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Tickets' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Escalated Tickets' })).not.toBeInTheDocument();
+  });
 });

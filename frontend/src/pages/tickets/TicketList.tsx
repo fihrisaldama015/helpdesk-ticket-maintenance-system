@@ -300,7 +300,7 @@ const TicketList: React.FC = () => {
         </div>
         <div className='py-5 px-6'>
           {isLoading ? (
-            <div className="py-10 flex justify-center">
+            <div className="py-10 flex justify-center" data-testid="loading-spinner">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           ) : tickets.length > 0 ? (

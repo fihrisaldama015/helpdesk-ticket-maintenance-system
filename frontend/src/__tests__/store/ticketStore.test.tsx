@@ -115,6 +115,40 @@ describe('ticketStore', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.isLoading).toBe(false);
     });
+
+    it('handles error when fetching user tickets fails', async () => {
+      const error = new Error('Failed to fetch your tickets');
+      (ticketRepository.getMyTickets as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        await result.current.getMyTickets();
+      });
+
+      expect(result.current.error).toBe('Failed to fetch your tickets');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('applies filters when provided', async () => {
+      const mockTickets = [mockTicket];
+      (ticketRepository.getMyTickets as jest.Mock).mockResolvedValue({
+        tickets: mockTickets,
+        total: 1,
+        page: 1,
+        limit: 10
+      });
+
+      const { result } = renderHook(() => useTicketStore());
+      const filters = { status: ['NEW'] as TicketStatus[] };
+
+      await act(async () => {
+        await result.current.getMyTickets(filters);
+      });
+
+      expect(ticketRepository.getMyTickets).toHaveBeenCalledWith(filters);
+      expect(result.current.filters).toEqual(filters);
+    });
   });
 
   describe('getEscalatedTickets', () => {
@@ -137,6 +171,40 @@ describe('ticketStore', () => {
       expect(result.current.tickets).toEqual(mockTickets);
       expect(result.current.error).toBeNull();
       expect(result.current.isLoading).toBe(false);
+    });
+
+    it('handles error when fetching escalated tickets fails', async () => {
+      const error = new Error('Failed to fetch escalated tickets');
+      (ticketRepository.getEscalatedTickets as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        await result.current.getEscalatedTickets();
+      });
+
+      expect(result.current.error).toBe('Failed to fetch escalated tickets');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('applies filters when provided', async () => {
+      const mockTickets = [{ ...mockTicket, status: 'ESCALATED' }];
+      (ticketRepository.getEscalatedTickets as jest.Mock).mockResolvedValue({
+        tickets: mockTickets,
+        total: 1,
+        page: 1,
+        limit: 10
+      });
+
+      const { result } = renderHook(() => useTicketStore());
+      const filters = { priority: ['HIGH'] as TicketPriority[] };
+
+      await act(async () => {
+        await result.current.getEscalatedTickets(filters);
+      });
+
+      expect(ticketRepository.getEscalatedTickets).toHaveBeenCalledWith(filters);
+      expect(result.current.filters).toEqual(filters);
     });
   });
 
@@ -273,6 +341,21 @@ describe('ticketStore', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.isLoading).toBe(false);
     });
+
+    it('handles error when escalating to L2 fails', async () => {
+      const error = new Error('Failed to escalate ticket');
+      (ticketRepository.escalateToL2 as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        const success = await result.current.escalateToL2('1', 'Need L2 support');
+        expect(success).toBe(false);
+      });
+
+      expect(result.current.error).toBe('Failed to escalate ticket');
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 
   describe('setCriticalValue', () => {
@@ -290,6 +373,21 @@ describe('ticketStore', () => {
       expect(ticketRepository.setCriticalValue).toHaveBeenCalledWith('1', 'C1');
       expect(result.current.currentTicket).toEqual(updatedTicket);
       expect(result.current.error).toBeNull();
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('handles error when setting critical value fails', async () => {
+      const error = new Error('Failed to set critical value');
+      (ticketRepository.setCriticalValue as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        const success = await result.current.setCriticalValue('1', 'C1');
+        expect(success).toBe(false);
+      });
+
+      expect(result.current.error).toBe('Failed to set critical value');
       expect(result.current.isLoading).toBe(false);
     });
   });
@@ -311,6 +409,21 @@ describe('ticketStore', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.isLoading).toBe(false);
     });
+
+    it('handles error when escalating to L3 fails', async () => {
+      const error = new Error('Failed to escalate ticket to L3');
+      (ticketRepository.escalateToL3 as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        const success = await result.current.escalateToL3('1', 'Need L3 support', 'C1');
+        expect(success).toBe(false);
+      });
+
+      expect(result.current.error).toBe('Failed to escalate ticket to L3');
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 
   describe('addTicketAction', () => {
@@ -330,6 +443,40 @@ describe('ticketStore', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.isLoading).toBe(false);
     });
+
+    it('successfully adds a ticket action with status change', async () => {
+      const updatedTicket = { 
+        ...mockTicket, 
+        status: 'ATTENDING',
+        actions: [{ id: '1', notes: 'Test action', newStatus: 'ATTENDING' }] 
+      };
+      (ticketRepository.addTicketAction as jest.Mock).mockResolvedValue(updatedTicket);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        const success = await result.current.addTicketAction('1', 'COMMENT', 'Test action', 'ATTENDING');
+        expect(success).toBe(true);
+      });
+
+      expect(ticketRepository.addTicketAction).toHaveBeenCalledWith('1', 'COMMENT', 'Test action', 'ATTENDING');
+      expect(result.current.currentTicket).toEqual(updatedTicket);
+    });
+
+    it('handles error when adding ticket action fails', async () => {
+      const error = new Error('Failed to add action');
+      (ticketRepository.addTicketAction as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        const success = await result.current.addTicketAction('1', 'COMMENT', 'Test action');
+        expect(success).toBe(false);
+      });
+
+      expect(result.current.error).toBe('Failed to add action');
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 
   describe('resolveTicket', () => {
@@ -347,6 +494,21 @@ describe('ticketStore', () => {
       expect(ticketRepository.resolveTicket).toHaveBeenCalledWith('1', 'Issue resolved');
       expect(result.current.currentTicket).toEqual(resolvedTicket);
       expect(result.current.error).toBeNull();
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('handles error when resolving ticket fails', async () => {
+      const error = new Error('Failed to resolve ticket');
+      (ticketRepository.resolveTicket as jest.Mock).mockRejectedValue(error);
+
+      const { result } = renderHook(() => useTicketStore());
+
+      await act(async () => {
+        const success = await result.current.resolveTicket('1', 'Issue resolved');
+        expect(success).toBe(false);
+      });
+
+      expect(result.current.error).toBe('Failed to resolve ticket');
       expect(result.current.isLoading).toBe(false);
     });
   });

@@ -162,6 +162,7 @@ const CreateTicket: React.FC = () => {
                   <button
                     className="ml-auto text-red-500 hover:text-red-700 transition-colors duration-200"
                     onClick={() => setShowError(false)}
+                    aria-label="Close error message"
                   >
                     <X className="h-4 w-4" />
                   </button>

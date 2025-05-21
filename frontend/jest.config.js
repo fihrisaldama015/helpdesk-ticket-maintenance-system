@@ -20,5 +20,8 @@ export default {
     '!src/**/*.d.ts',
     '!src/main.tsx',
     '!src/vite-env.d.ts',
+    '!src/api/axiosConfig.ts',
+    // Exclude auto-generated Shadcn UI components
+    '!src/components/ui/*',
   ],
 };
