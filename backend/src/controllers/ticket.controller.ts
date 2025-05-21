@@ -6,7 +6,10 @@ declare module 'express' {
   interface Request {
     user?: {
       id: string;
-      role: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: UserRole;
     };
   }
 }
@@ -348,7 +351,6 @@ export class TicketController {
 
       res.status(200).json(result);
     } catch (error: any) {
-      console.error('Get my tickets error:', error);
       if (error.code) {
         res.status(500).json({
           message: 'Database error',
@@ -420,7 +422,6 @@ export class TicketController {
       const result = await this.ticketService.getEscalatedTickets(level, filters);
       res.status(200).json(result);
     } catch (error: any) {
-      console.error('Get escalated tickets error:', error);
       if (error.code) {
         // Handle Prisma errors
         res.status(500).json({

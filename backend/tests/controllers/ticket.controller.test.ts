@@ -1,7 +1,27 @@
 import { TicketController } from '@/controllers/ticket.controller';
-import { CriticalValue, TicketCategory, TicketPriority, TicketStatus, UserRole } from '@/models';
+import { CriticalValue, Ticket, TicketCategory, TicketPriority, TicketStatus, UserRole } from '@/models';
 import { TicketService } from '@/services/ticket.service';
 import * as httpMocks from 'node-mocks-http';
+
+// Helper function to handle date fields in the response
+const normalizeDates = (obj: any): any => {
+  if (!obj || typeof obj !== 'object') return obj;
+
+  const result: any = {};
+  for (const key in obj) {
+    if (key === 'createdAt' || key === 'updatedAt' || key === 'performedAt') {
+      // Convert string dates to Date objects for comparison
+      result[key] = obj[key] ? new Date(obj[key]) : obj[key];
+    } else if (Array.isArray(obj[key])) {
+      result[key] = obj[key].map((item: any) => normalizeDates(item));
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      result[key] = normalizeDates(obj[key]);
+    } else {
+      result[key] = obj[key];
+    }
+  }
+  return result;
+};
 
 jest.mock('@/services/ticket.service');
 
@@ -692,6 +712,598 @@ describe('TicketController', () => {
       }));
 
       expect(ticketService.resolveTicket).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getMyTickets', () => {
+    it('should handle database errors', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/me',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L1_AGENT
+        },
+        query: {}
+      });
+
+      const res = httpMocks.createResponse();
+      // Create a custom error with Prisma error properties
+      const dbError = new Error('Database error') as Error & {
+        code: string;
+        meta?: { target: string[] };
+      };
+      dbError.code = 'P2002'; // Example Prisma error code
+      dbError.meta = { target: ['email'] };
+
+      ticketService.getMyTickets.mockRejectedValueOnce(dbError);
+
+      await ticketController.getMyTickets(req, res);
+
+      expect(res._getStatusCode()).toBe(500);
+      const response = JSON.parse(res._getData());
+      expect(response).toHaveProperty('code', 'P2002');
+      expect(response).toHaveProperty('meta');
+    });
+
+    it('should handle array query parameters', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/me?status=NEW&status=ATTENDING&priority=HIGH&category=SOFTWARE&search=test',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L1_AGENT
+        },
+        query: {
+          status: ['NEW', 'ATTENDING'],
+          priority: 'HIGH',
+          category: 'SOFTWARE',
+          search: 'test',
+          page: '1',
+          limit: '10'
+        }
+      });
+
+      const res = httpMocks.createResponse();
+      const mockTickets: Ticket[] = [];
+      const mockResult = {
+        tickets: mockTickets,
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      };
+
+      ticketService.getMyTickets.mockResolvedValue(mockResult);
+
+      await ticketController.getMyTickets(req, res);
+
+      expect(ticketService.getMyTickets).toHaveBeenCalledWith('user123', {
+        status: ['NEW', 'ATTENDING'],
+        priority: ['HIGH'],
+        category: ['SOFTWARE'],
+        search: 'test',
+        page: 1,
+        limit: 10
+      });
+      expect(res._getStatusCode()).toBe(200);
+      expect(JSON.parse(res._getData())).toEqual(mockResult);
+    });
+
+    it('should handle invalid page and limit parameters', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/me?page=invalid&limit=invalid',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L1_AGENT
+        },
+        query: {
+          page: 'invalid',
+          limit: 'invalid'
+        }
+      });
+
+      const res = httpMocks.createResponse();
+      const mockTickets: Ticket[] = [];
+      const mockResult = {
+        tickets: mockTickets,
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      };
+
+      ticketService.getMyTickets.mockResolvedValue(mockResult);
+
+      await ticketController.getMyTickets(req, res);
+
+      expect(ticketService.getMyTickets).toHaveBeenCalledWith('user123', {
+        status: [],
+        priority: [],
+        category: [],
+        search: '',
+        page: 1,
+        limit: 10
+      });
+      expect(res._getStatusCode()).toBe(200);
+    });
+    it('should get tickets assigned to the current user with filters', async () => {
+      const mockUser = {
+        id: 'user123',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        role: UserRole.L1_AGENT
+      };
+
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/me?status=ATTENDING&priority=HIGH&category=SOFTWARE&search=test',
+        user: mockUser,
+        query: {
+          status: 'ATTENDING',
+          priority: 'HIGH',
+          category: 'SOFTWARE',
+          search: 'test',
+          page: '1',
+          limit: '10'
+        }
+      });
+
+      const res = httpMocks.createResponse();
+
+      const mockTicket = {
+        id: 'ticket1',
+        title: 'Test Ticket 1',
+        description: 'This is a test ticket',
+        status: TicketStatus.ATTENDING,
+        priority: TicketPriority.HIGH,
+        category: TicketCategory.SOFTWARE,
+        criticalValue: CriticalValue.NONE,
+        createdById: 'user123',
+        assignedToId: 'user123',
+        expectedCompletionDate: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: mockUser,
+        assignedTo: mockUser,
+        actions: []
+      };
+
+      const mockResult = {
+        tickets: [mockTicket],
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1
+      };
+
+      ticketService.getMyTickets.mockResolvedValue(mockResult);
+
+      await ticketController.getMyTickets(req, res);
+
+      expect(ticketService.getMyTickets).toHaveBeenCalledWith('user123', {
+        status: ['ATTENDING'],
+        priority: ['HIGH'],
+        category: ['SOFTWARE'],
+        search: 'test',
+        page: 1,
+        limit: 10
+      });
+      expect(res._getStatusCode()).toBe(200);
+
+      // Parse the response and handle date fields
+      const responseData = JSON.parse(res._getData());
+
+      // Normalize dates in the response and expected data
+      const normalizedResponse = normalizeDates(responseData);
+      const normalizedExpected = normalizeDates(mockResult);
+
+      expect(normalizedResponse).toEqual(normalizedExpected);
+    });
+
+    it('should handle errors when getting my tickets', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/me',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L1_AGENT
+        },
+        query: {}
+      });
+
+      const res = httpMocks.createResponse();
+      const error = new Error('Database error');
+      ticketService.getMyTickets.mockRejectedValue(error);
+
+      await ticketController.getMyTickets(req, res);
+
+      expect(ticketService.getMyTickets).toHaveBeenCalledWith('user123', {
+        status: [],
+        priority: [],
+        category: [],
+        search: '',
+        page: 1,
+        limit: 10
+      });
+      expect(res._getStatusCode()).toBe(500);
+    });
+  });
+
+  describe('addTicketAction', () => {
+    it('should add an action to a ticket', async () => {
+      const actionData = {
+        action: 'Updated ticket status',
+        notes: 'Changed status to ATTENDING',
+        newStatus: TicketStatus.ATTENDING
+      };
+
+      const mockUser = {
+        id: 'user123',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        role: UserRole.L1_AGENT
+      };
+
+      const req = httpMocks.createRequest({
+        method: 'POST',
+        url: '/api/tickets/ticket123/actions',
+        params: { id: 'ticket123' },
+        body: actionData,
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L1_AGENT
+        }
+      });
+
+      const res = httpMocks.createResponse();
+
+      const mockAction = {
+        id: 'action1',
+        action: actionData.action,
+        notes: actionData.notes,
+        newStatus: actionData.newStatus,
+        ticketId: 'ticket123',
+        userId: 'user123',
+        createdAt: new Date(),
+        user: mockUser,
+        ticket: {
+          id: 'ticket123',
+          title: 'Test Ticket',
+          description: 'Test description',
+          status: TicketStatus.ATTENDING,
+          priority: TicketPriority.MEDIUM,
+          category: TicketCategory.SOFTWARE,
+          criticalValue: CriticalValue.NONE,
+          createdById: 'user123',
+          assignedToId: 'user123',
+          expectedCompletionDate: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: mockUser,
+          assignedTo: mockUser,
+          actions: []
+        }
+      };
+
+      const updatedTicket = {
+        id: 'ticket123',
+        title: 'Test Ticket',
+        description: 'Test description',
+        status: TicketStatus.ATTENDING,
+        priority: TicketPriority.MEDIUM,
+        category: TicketCategory.SOFTWARE,
+        criticalValue: CriticalValue.NONE,
+        createdById: 'user123',
+        assignedToId: 'user123',
+        expectedCompletionDate: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: mockUser,
+        assignedTo: mockUser,
+        actions: [{
+          id: 'action1',
+          action: actionData.action,
+          notes: actionData.notes,
+          newStatus: actionData.newStatus,
+          ticketId: 'ticket123',
+          userId: 'user123',
+          createdAt: new Date(),
+          user: mockUser
+        }]
+      };
+
+      ticketService.addTicketAction.mockResolvedValueOnce(mockAction);
+      ticketService.updateTicket.mockResolvedValueOnce(updatedTicket);
+
+      await ticketController.addTicketAction(req, res);
+
+      expect(ticketService.addTicketAction).toHaveBeenCalledWith(
+        {
+          ticketId: 'ticket123',
+          action: actionData.action,
+          notes: actionData.notes,
+          newStatus: actionData.newStatus
+        },
+        'user123'
+      );
+      expect(ticketService.updateTicket).toHaveBeenCalledWith(
+        'ticket123',
+        { assignedToId: 'user123' },
+        'user123'
+      );
+      expect(res._getStatusCode()).toBe(201);
+
+      // Parse the response and handle date fields
+      const responseData = JSON.parse(res._getData());
+
+      // Normalize dates in the response and expected data
+      const normalizedResponse = normalizeDates(responseData);
+      const normalizedExpected = normalizeDates(updatedTicket);
+
+      expect(normalizedResponse).toEqual(normalizedExpected);
+    });
+
+    it('should return 400 if action is missing', async () => {
+      const req = httpMocks.createRequest({
+        method: 'POST',
+        url: '/api/tickets/ticket123/actions',
+        params: { id: 'ticket123' },
+        body: { notes: 'Some notes' },
+        user: {
+          id: 'user123',
+          role: UserRole.L1_AGENT
+        }
+      });
+
+      const res = httpMocks.createResponse();
+
+      await ticketController.addTicketAction(req, res);
+
+      expect(res._getStatusCode()).toBe(400);
+      expect(JSON.parse(res._getData())).toEqual({
+        message: 'Action description is required'
+      });
+    });
+  });
+
+  describe('getEscalatedTickets', () => {
+    it('should return 403 for unauthorized roles', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/escalated',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L1_AGENT
+        },
+        query: {}
+      });
+
+      const res = httpMocks.createResponse();
+
+      await ticketController.getEscalatedTickets(req, res);
+
+      expect(res._getStatusCode()).toBe(403);
+      expect(JSON.parse(res._getData())).toEqual({ message: 'Access denied' });
+    });
+
+    it('should handle L2 support role', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/escalated?criticalValue=C1&category=SOFTWARE&search=test',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L2_SUPPORT
+        },
+        query: {
+          criticalValue: 'C1',
+          category: 'SOFTWARE',
+          search: 'test',
+          page: '1',
+          limit: '10'
+        }
+      });
+
+      const res = httpMocks.createResponse();
+      const mockResult = {
+        tickets: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      };
+
+      ticketService.getEscalatedTickets.mockResolvedValue(mockResult);
+
+      await ticketController.getEscalatedTickets(req, res);
+
+      expect(ticketService.getEscalatedTickets).toHaveBeenCalledWith('L2', {
+        criticalValue: ['C1'],
+        category: ['SOFTWARE'],
+        search: 'test',
+        page: 1,
+        limit: 10
+      });
+      expect(res._getStatusCode()).toBe(200);
+    });
+
+    it('should handle array query parameters', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/escalated?criticalValue=C1&criticalValue=C2&category=SOFTWARE&category=HARDWARE',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L3_SUPPORT
+        },
+        query: {
+          criticalValue: ['C1', 'C2'],
+          category: ['SOFTWARE', 'HARDWARE']
+        }
+      });
+
+      const res = httpMocks.createResponse();
+      const mockResult = {
+        tickets: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      };
+
+      ticketService.getEscalatedTickets.mockResolvedValue(mockResult);
+
+      await ticketController.getEscalatedTickets(req, res);
+
+      expect(ticketService.getEscalatedTickets).toHaveBeenCalledWith('L3', {
+        criticalValue: ['C1', 'C2'],
+        category: ['SOFTWARE', 'HARDWARE'],
+        search: '',
+        page: 1,
+        limit: 10
+      });
+      expect(res._getStatusCode()).toBe(200);
+    });
+
+    it('should handle database errors', async () => {
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/escalated',
+        user: {
+          id: 'user123',
+          email: 'test@example.com',
+          role: UserRole.L2_SUPPORT
+        },
+        query: {}
+      });
+
+      const res = httpMocks.createResponse();
+      // Create a custom error with Prisma error properties
+      const dbError = new Error('Database error') as Error & {
+        code: string;
+        meta?: { target: string[] };
+      };
+      dbError.code = 'P2002';
+      dbError.meta = { target: ['email'] };
+
+      ticketService.getEscalatedTickets.mockRejectedValueOnce(dbError);
+
+      await ticketController.getEscalatedTickets(req, res);
+
+      expect(res._getStatusCode()).toBe(500);
+      const response = JSON.parse(res._getData());
+      expect(response).toHaveProperty('code', 'P2002');
+      expect(response).toHaveProperty('meta');
+    });
+    it('should get L2 escalated tickets with filters', async () => {
+      const mockTickets = [
+        {
+          id: 'ticket1',
+          title: 'L2 Escalated Ticket',
+          description: 'Test description',
+          status: TicketStatus.ESCALATED_L2,
+          criticalValue: CriticalValue.C1,
+          category: TicketCategory.SOFTWARE,
+          priority: TicketPriority.HIGH,
+          expectedCompletionDate: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdById: 'user123',
+          assignedToId: 'user123',
+          createdBy: {
+            id: 'user123',
+            email: 'test@example.com',
+            firstName: 'Test',
+            lastName: 'User',
+            role: UserRole.L2_SUPPORT
+          },
+          assignedTo: {
+            id: 'user123',
+            email: 'test@example.com',
+            firstName: 'Test',
+            lastName: 'User',
+            role: UserRole.L2_SUPPORT
+          },
+          ticketActions: []
+        }
+      ];
+
+      ticketService.getEscalatedTickets.mockResolvedValue({
+        tickets: mockTickets,
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1
+      });
+
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/escalated-tickets?level=L2&criticalValue=C1&category=SOFTWARE&search=escalated&page=1&limit=10',
+        query: {
+          level: 'L2',
+          criticalValue: 'C1',
+          category: 'SOFTWARE',
+          search: 'escalated',
+          page: '1',
+          limit: '10'
+        },
+        user: {
+          id: 'user123',
+          role: UserRole.L2_SUPPORT
+        }
+      });
+
+      const res = httpMocks.createResponse();
+
+      await ticketController.getEscalatedTickets(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(ticketService.getEscalatedTickets).toHaveBeenCalledWith('L2', {
+        criticalValue: ['C1'],
+        category: ['SOFTWARE'],
+        search: 'escalated',
+        page: 1,
+        limit: 10
+      });
+    });
+
+    it('should handle database errors', async () => {
+      const error = new Error('Database error') as Error & { code: string };
+      error.code = 'P2002';
+      ticketService.getEscalatedTickets.mockRejectedValue(error);
+
+      const req = httpMocks.createRequest({
+        method: 'GET',
+        url: '/api/tickets/escalated-tickets?level=L2',
+        query: {
+          level: 'L2'
+        },
+        user: {
+          id: 'user123',
+          role: UserRole.L2_SUPPORT
+        }
+      });
+
+      const res = httpMocks.createResponse();
+
+      await ticketController.getEscalatedTickets(req, res);
+
+      expect(res.statusCode).toBe(500);
+      expect(JSON.parse(res._getData())).toEqual({
+        message: 'Database error',
+        code: 'P2002',
+        meta: undefined
+      });
     });
   });
 });

@@ -3,17 +3,15 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma';
 import { UserRole } from '../models';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-        role: UserRole;
-      };
-    }
+declare module 'express' {
+  interface Request {
+    user?: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: UserRole;
+    };
   }
 }
 

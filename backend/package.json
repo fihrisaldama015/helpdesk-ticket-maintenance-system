@@ -13,7 +13,7 @@
     "seed:test": "dotenv -e .env.test -- ts-node prisma/seed.ts",
     "test": "jest --verbose",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --verbose",
     "migrate:test": "dotenv -e .env.test -- npx prisma migrate dev"
   },
   "keywords": [],

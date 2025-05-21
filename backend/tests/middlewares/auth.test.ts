@@ -67,6 +67,8 @@ describe('authenticate middleware', () => {
     const mockUserPayload = {
       id: 'user-id',
       email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
       role: UserRole.L1_AGENT,
     };
     
@@ -95,6 +97,8 @@ describe('authenticate middleware', () => {
     const mockUser = {
       id: 'user-id',
       email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
       role: UserRole.L1_AGENT,
     };
     
