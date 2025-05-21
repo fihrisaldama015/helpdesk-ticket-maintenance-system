@@ -206,12 +206,12 @@ npm install
 yarn install
 ```
 
-2. Create a `.env` file in the frontend directory:
+3. Create a `.env` file in the frontend directory:
 ```
 VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
-3. Start the development server:
+4. Start the development server:
 ```bash
 # Using npm
 npm run dev
@@ -221,7 +221,7 @@ yarn dev
 ```
 The frontend will be available at http://localhost:5173
 
-4. Running Tests:
+5. Running Tests:
 ```bash
 # Run all tests
 npm test
@@ -239,7 +239,7 @@ npm run test:coverage
 yarn test:coverage
 ```
 
-5. Building for Production:
+6. Building for Production:
 ```bash
 # Create a production build
 npm run build
@@ -309,7 +309,7 @@ All ticket routes require authentication.
 ## Project Structure
 
 ```
-ticket_maintenance/
+helpdesk-ticket_maintenance-system/
 ├── frontend/               # Frontend React application
 │   ├── public/             # Static files
 │   ├── src/                # Source code
