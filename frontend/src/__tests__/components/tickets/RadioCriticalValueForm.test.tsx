@@ -78,26 +78,115 @@ describe('RadioCriticalValueForm', () => {
   });
 
   describe('when handling critical value selection', () => {
-    it('calls setCriticalValue with correct parameters when form is submitted', async () => {
-      render(
-        <RadioCriticalValueForm
-          ticketId={mockTicketId}
-          setShowCriticalValueForm={mockSetShowCriticalValueForm}
-        />
-      );
+    // Test each critical value option (C1, C2, C3)
+    const testCases = [
+      { 
+        value: 'C1', 
+        label: 'C1 (Critical)', 
+        testId: 'critical-c1-container',
+        bgClass: 'bg-red-50', 
+        borderClass: 'border-red-200',
+        textClass: 'text-red-600',
+        description: 'System down or significantly impacted',
+        iconClass: 'text-red-600'
+      },
+      { 
+        value: 'C2', 
+        label: 'C2 (Major)', 
+        testId: 'critical-c2-container',
+        bgClass: 'bg-orange-50', 
+        borderClass: 'border-orange-200',
+        textClass: 'text-orange-600',
+        description: 'Partial feature issue or limited impact',
+        iconClass: 'text-orange-500'
+      },
+      { 
+        value: 'C3', 
+        label: 'C3 (Minor)', 
+        testId: 'critical-c3-container',
+        bgClass: 'bg-yellow-50', 
+        borderClass: 'border-yellow-200',
+        textClass: 'text-yellow-600',
+        description: 'Minor problem or inquiry',
+        iconClass: 'text-yellow-500'
+      },
+    ];
 
-      const mediumRadio = screen.getByTestId('critical-c2');
-      fireEvent.click(mediumRadio);
+    testCases.forEach(({ value, label, testId, bgClass, borderClass, textClass, description, iconClass }) => {
+      it(`selects ${value} when clicking on the ${label} option and updates UI accordingly`, () => {
+        render(
+          <RadioCriticalValueForm
+            ticketId={mockTicketId}
+            setShowCriticalValueForm={mockSetShowCriticalValueForm}
+          />
+        );
 
-      const saveButton = screen.getByRole('button', { name: /save/i });
-      fireEvent.click(saveButton);
-
-      await act(async () => {
-        resolvePromise(true);
+        // Find the clickable container directly by test ID
+        const container = screen.getByTestId(testId);
+        
+        // Verify the container exists and has the correct classes
+        expect(container).toBeInTheDocument();
+        expect(container).toHaveClass('flex', 'items-start', 'p-4', 'rounded-lg', 'border-2');
+        
+        // Click the container
+        fireEvent.click(container);
+        
+        // Verify the container has the selected styles
+        expect(container).toHaveClass(bgClass);
+        expect(container).toHaveClass(borderClass);
+        
+        // Verify the label text is visible and has the correct color
+        const labelElement = screen.getByText(label);
+        expect(labelElement).toBeInTheDocument();
+        expect(labelElement).toHaveClass(textClass);
+        
+        // Verify the description is visible
+        expect(screen.getByText(description)).toBeInTheDocument();
+        
+        // Verify the container shows as selected (has the correct border and background classes)
+        expect(container).toHaveClass(borderClass);
+        expect(container).toHaveClass(bgClass);
+        
+        // Verify the icon has the correct color
+        const iconElement = container.querySelector('svg');
+        expect(iconElement).toHaveClass(iconClass);
       });
+    });
+  });
 
-      expect(mockSetCriticalValue).toHaveBeenCalledWith(mockTicketId, 'C2');
-      expect(mockSetShowCriticalValueForm).toHaveBeenCalledWith(false);
+  describe('when handling form submission', () => {
+    // Test form submission for each critical value option
+    const testCases = [
+      { value: 'C1', testId: 'critical-c1' },
+      { value: 'C2', testId: 'critical-c2' },
+      { value: 'C3', testId: 'critical-c3' },
+    ];
+
+    testCases.forEach(({ value, testId }) => {
+      it(`submits the form with ${value} selected`, async () => {
+        render(
+          <RadioCriticalValueForm
+            ticketId={mockTicketId}
+            setShowCriticalValueForm={mockSetShowCriticalValueForm}
+          />
+        );
+
+        // Select the option using the container test ID
+        const optionContainer = screen.getByTestId(testId);
+        fireEvent.click(optionContainer);
+
+        // Submit the form
+        const saveButton = screen.getByRole('button', { name: /save/i });
+        fireEvent.click(saveButton);
+
+        await act(async () => {
+          resolvePromise(true);
+        });
+
+        // Verify the store was called with the correct parameters
+        expect(mockSetCriticalValue).toHaveBeenCalledWith(mockTicketId, value);
+        expect(mockSetShowCriticalValueForm).toHaveBeenCalledWith(false);
+      });
     });
 
     it('does not close the form when setCriticalValue fails', async () => {
@@ -110,8 +199,8 @@ describe('RadioCriticalValueForm', () => {
         />
       );
 
-      const mediumRadio = screen.getByTestId('critical-c2');
-      fireEvent.click(mediumRadio);
+      const option = screen.getByTestId('critical-c2');
+      fireEvent.click(option);
 
       const saveButton = screen.getByRole('button', { name: /save/i });
       fireEvent.click(saveButton);
@@ -132,8 +221,8 @@ describe('RadioCriticalValueForm', () => {
         />
       );
 
-      const mediumRadio = screen.getByTestId('critical-c2');
-      fireEvent.click(mediumRadio);
+      const option = screen.getByTestId('critical-c2');
+      fireEvent.click(option);
 
       const saveButton = screen.getByRole('button', { name: /save/i });
       fireEvent.click(saveButton);
@@ -182,6 +271,10 @@ describe('RadioCriticalValueForm', () => {
 
       const saveButton = screen.getByRole('button', { name: /saving/i });
       expect(saveButton).toBeDisabled();
+      
+      // Verify the loading spinner is shown
+      const loader = saveButton.querySelector('[class*="animate-spin"]');
+      expect(loader).toBeInTheDocument();
     });
 
     it('shows correct button states', () => {
@@ -193,10 +286,16 @@ describe('RadioCriticalValueForm', () => {
         />
       );
 
+      // Save button should be disabled by default (no selection)
       const saveButton = screen.getByRole('button', { name: /save/i });
       expect(saveButton).toBeDisabled();
       expect(saveButton).toHaveClass('bg-indigo-600');
       expect(saveButton).toHaveClass('text-white');
+
+      // Select an option and verify save button is enabled
+      const option = screen.getByText('C1 (Critical)');
+      fireEvent.click(option);
+      expect(saveButton).not.toBeDisabled();
 
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
       expect(cancelButton).not.toBeDisabled();

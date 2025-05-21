@@ -50,6 +50,7 @@ const RadioCriticalValueForm = ({
             
             {/* C1 Option */}
             <div
+              data-testid="critical-c1-container"
               className={`flex items-start p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
                 selectedCriticalValue === 'C1'
                   ? 'border-red-200 bg-red-50'
@@ -74,6 +75,7 @@ const RadioCriticalValueForm = ({
 
             {/* C2 Option */}
             <div
+              data-testid="critical-c2-container"
               className={`flex items-start p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
                 selectedCriticalValue === 'C2'
                   ? 'border-orange-200 bg-orange-50'
@@ -98,6 +100,7 @@ const RadioCriticalValueForm = ({
 
             {/* C3 Option */}
             <div
+              data-testid="critical-c3-container"
               className={`flex items-start p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
                 selectedCriticalValue === 'C3'
                   ? 'border-yellow-200 bg-yellow-50'

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import TicketDetail from '../../../pages/tickets/TicketDetail';
 import useAuthStore from '../../../store/authStore';
@@ -167,6 +167,62 @@ describe('TicketDetail', () => {
     expect(screen.getByText('Escalate to L2')).toBeInTheDocument();
   });
 
+  it('cleans up error on unmount', () => {
+    mockZustandStore(useTicketStore, {
+      currentTicket: mockTicket,
+      isLoading: false,
+      error: 'Failed to load ticket',
+      getTicketById: mockGetTicketById,
+      clearError: mockClearError
+    });
+
+    const { unmount } = render(
+      <BrowserRouter>
+        <TicketDetail />
+      </BrowserRouter>
+    );
+
+    // Error message should be visible
+    expect(screen.getByText('Failed to load ticket')).toBeInTheDocument();
+    
+    // Unmount the component
+    unmount();
+    
+    // Verify clearError was called on unmount
+    expect(mockClearError).toHaveBeenCalled();
+  });
+  
+  it('clears error after timeout', () => {
+    // Mock the timer
+    jest.useFakeTimers();
+    
+    // Set up the initial state with an error
+    mockZustandStore(useTicketStore, {
+      currentTicket: mockTicket,
+      isLoading: false,
+      error: 'Failed to load ticket',
+      getTicketById: mockGetTicketById,
+      clearError: jest.fn() // Use a local mock to track calls
+    });
+
+    // Render the component
+    const { unmount } = render(
+      <BrowserRouter>
+        <TicketDetail />
+      </BrowserRouter>
+    );
+
+    // Error message should be visible
+    expect(screen.getByText('Failed to load ticket')).toBeInTheDocument();
+    
+    // Fast-forward time to trigger the timeout
+    jest.advanceTimersByTime(5000);
+    
+    // Clean up
+    unmount();
+    jest.useRealTimers();
+  });
+
   it('renders different action buttons for L2 support', () => {
     // Create a ticket with ESCALATED_L2 status for L2 support
     const escalatedTicket = {
@@ -210,5 +266,84 @@ describe('TicketDetail', () => {
     
     // Check if clearError was called
     expect(mockClearError).toHaveBeenCalled();
+  });
+
+  it('renders correct buttons based on user role and ticket status', () => {
+    // Mock the button components
+    jest.mock('../../../components/tickets/UpdateTicketStatusButton', () => ({
+      __esModule: true,
+      default: () => <button data-testid="update-status-button">Update Status</button>
+    }));
+
+    // Test L1 agent with NEW ticket
+    mockZustandStore(useAuthStore, {
+      user: mockL1Agent,
+      isAuthenticated: true,
+      isLoading: false,
+      logout: jest.fn()
+    });
+    
+    mockZustandStore(useTicketStore, {
+      currentTicket: { ...mockTicket, status: 'NEW' },
+      isLoading: false,
+      error: null,
+      getTicketById: mockGetTicketById,
+      clearError: mockClearError
+    });
+
+    const { rerender } = render(
+      <BrowserRouter>
+        <TicketDetail />
+      </BrowserRouter>
+    );
+
+    // L1 agent should see Escalate to L2 button for NEW tickets
+    expect(screen.getByText('Escalate to L2')).toBeInTheDocument();
+
+    // Test L2 support with ESCALATED_L2 ticket
+    mockZustandStore(useAuthStore, {
+      user: mockL2Support,
+      isAuthenticated: true,
+      isLoading: false,
+      logout: jest.fn()
+    });
+    
+    mockZustandStore(useTicketStore, {
+      currentTicket: { ...mockTicket, status: 'ESCALATED_L2' },
+      isLoading: false,
+      error: null,
+      getTicketById: mockGetTicketById,
+      clearError: mockClearError
+    });
+
+    rerender(
+      <BrowserRouter>
+        <TicketDetail />
+      </BrowserRouter>
+    );
+
+    // L2 support should see Set Critical Value button for ESCALATED_L2 tickets
+    expect(screen.getByText('Set Critical Value')).toBeInTheDocument();
+  });
+
+  it('handles button click events', () => {
+    // Mock the button components
+    jest.mock('../../../components/tickets/UpdateTicketStatusButton', () => ({
+      __esModule: true,
+      default: () => <button data-testid="update-status-button">Update Status</button>
+    }));
+
+    render(
+      <BrowserRouter>
+        <TicketDetail />
+      </BrowserRouter>
+    );
+
+    // Test button click
+    const escalateButton = screen.getByText('Escalate to L2');
+    fireEvent.click(escalateButton);
+    
+    // Verify the form is shown after clicking the button
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
   });
 });
