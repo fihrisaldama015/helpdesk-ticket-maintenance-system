@@ -1,22 +1,19 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import RadioCriticalValueForm from '../../../components/tickets/RadioCriticalValueForm';
 
-jest.mock('../../../store/authStore', () => {
-  return {
-    __esModule: true,
-    default: jest.fn()
-  };
-});
+// Mock the stores
+jest.mock('../../../store/authStore', () => ({
+  __esModule: true,
+  default: jest.fn()
+}));
 
-jest.mock('../../../store/ticketStore', () => {
-  return {
-    __esModule: true,
-    default: jest.fn(() => ({
-      setCriticalValue: jest.fn(),
-      isLoading: false
-    }))
-  };
-});
+jest.mock('../../../store/ticketStore', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    setCriticalValue: jest.fn(),
+    isLoading: false
+  }))
+}));
 
 import useTicketStore from '../../../store/ticketStore';
 
@@ -56,12 +53,13 @@ describe('RadioCriticalValueForm', () => {
         />
       );
 
-      expect(screen.getByRole('heading', { level: 4 })).toBeInTheDocument();
-      expect(screen.getByRole('heading', { level: 4 })).toHaveClass('text-blue-700');
-      expect(screen.getByRole('heading', { level: 4 })).toHaveClass('font-medium');
-      expect(screen.getByRole('heading', { level: 4 })).toHaveClass('mb-4');
-      expect(screen.getByRole('heading', { level: 4 })).toHaveClass('flex');
-      expect(screen.getByRole('heading', { level: 4 })).toHaveClass('items-center');
+      const heading = screen.getByRole('heading', { level: 4, name: /set critical value/i });
+      expect(heading).toBeInTheDocument();
+      expect(heading).toHaveClass('text-blue-700');
+      expect(heading).toHaveClass('font-medium');
+      expect(heading).toHaveClass('mb-4');
+      expect(heading).toHaveClass('flex');
+      expect(heading).toHaveClass('items-center');
     });
 
     it('renders critical value radio group', () => {
@@ -100,6 +98,73 @@ describe('RadioCriticalValueForm', () => {
 
       expect(mockSetCriticalValue).toHaveBeenCalledWith(mockTicketId, 'C2');
       expect(mockSetShowCriticalValueForm).toHaveBeenCalledWith(false);
+    });
+
+    it('does not close the form when setCriticalValue fails', async () => {
+      mockSetCriticalValue.mockResolvedValueOnce(false);
+      
+      render(
+        <RadioCriticalValueForm
+          ticketId={mockTicketId}
+          setShowCriticalValueForm={mockSetShowCriticalValueForm}
+        />
+      );
+
+      const mediumRadio = screen.getByTestId('critical-c2');
+      fireEvent.click(mediumRadio);
+
+      const saveButton = screen.getByRole('button', { name: /save/i });
+      fireEvent.click(saveButton);
+
+      await act(async () => {
+        resolvePromise(false);
+      });
+
+      expect(mockSetCriticalValue).toHaveBeenCalledWith(mockTicketId, 'C2');
+      expect(mockSetShowCriticalValueForm).not.toHaveBeenCalled();
+    });
+
+    it('does not call setCriticalValue when ticketId is undefined', async () => {
+      render(
+        <RadioCriticalValueForm
+          ticketId={undefined as any}
+          setShowCriticalValueForm={mockSetShowCriticalValueForm}
+        />
+      );
+
+      const mediumRadio = screen.getByTestId('critical-c2');
+      fireEvent.click(mediumRadio);
+
+      const saveButton = screen.getByRole('button', { name: /save/i });
+      fireEvent.click(saveButton);
+
+      expect(mockSetCriticalValue).not.toHaveBeenCalled();
+    });
+
+    it('closes the form when cancel button is clicked', () => {
+      render(
+        <RadioCriticalValueForm
+          ticketId={mockTicketId}
+          setShowCriticalValueForm={mockSetShowCriticalValueForm}
+        />
+      );
+
+      const cancelButton = screen.getByRole('button', { name: /cancel/i });
+      fireEvent.click(cancelButton);
+
+      expect(mockSetShowCriticalValueForm).toHaveBeenCalledWith(false);
+    });
+    
+    it('disables save button when no option is selected', () => {
+      render(
+        <RadioCriticalValueForm
+          ticketId={mockTicketId}
+          setShowCriticalValueForm={mockSetShowCriticalValueForm}
+        />
+      );
+
+      const saveButton = screen.getByRole('button', { name: /save/i });
+      expect(saveButton).toBeDisabled();
     });
 
     it('shows loading state when saving', async () => {
