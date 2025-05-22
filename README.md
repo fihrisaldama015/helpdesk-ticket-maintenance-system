@@ -182,6 +182,16 @@ yarn install
    npm test
    # or
    yarn test
+
+   # Run tests in watch mode
+   npm run test:watch
+   # or
+   yarn test:watch
+
+   # Generate test coverage report
+   npm run test:coverage
+   # or
+   yarn test:coverage
    ```
 
 ### Frontend Setup
